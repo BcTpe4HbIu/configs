@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 cd "$(dirname "$0")"
 ln -sf "$(pwd)/vim" ~/.vim
