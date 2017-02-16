@@ -20,22 +20,22 @@ zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]} m:{[:lower:][:
 zstyle ':completion:*' verbose true
 zstyle :compinstall filename '~/.zshrc'
 
-autoload -Uz compinit
-compinit
+autoload -Uz compinit && compinit
 
-autoload -U predict-on
-zle -N predict-on
-zle -N predict-off
-bindkey -M emacs "^X^Z" predict-on
-bindkey -M emacs "^Z" predict-off
-
+autoload -U predict-on && (
+zle -N predict-on ;
+zle -N predict-off ;
+bindkey -M emacs "^X^Z" predict-on ;
+bindkey -M emacs "^Z" predict-off ;
+)
 
 
 export EDITOR='vim'
 
-autoload -U edit-command-line
-zle -N  edit-command-line
-bindkey -M emacs "^X^E" edit-command-line
+autoload -U edit-command-line && (
+zle -N  edit-command-line ;
+bindkey -M emacs "^X^E" edit-command-line ;
+)
 
 
 rationalise-dot() {
@@ -68,4 +68,13 @@ source ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}
 bindkey '5D' emacs-backward-word
 bindkey '5C' emacs-forward-word
 
+which go > /dev/null 2>&1 && (
+[ -d ~/go ] || mkdir ~/go ;
+path+=('~/go/bin')
+export PATH ;
+export GOPATH=~/go ;
+)
+
 alias tm="tmux a"
+
+
