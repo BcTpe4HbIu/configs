@@ -69,10 +69,8 @@ bindkey '5D' emacs-backward-word
 bindkey '5C' emacs-forward-word
 
 which go > /dev/null 2>&1 && (
-[ -d ~/go ] || mkdir ~/go ;
-path+=('~/go/bin')
-export PATH ;
-export GOPATH=~/go ;
+    [ -d ~/go ] || mkdir ~/go ;
+    export GOPATH=~/go ;
 )
 
 alias tm="tmux a"
