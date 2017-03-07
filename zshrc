@@ -30,8 +30,6 @@ bindkey -M emacs "^Z" predict-off ;
 )
 
 
-export EDITOR='vim'
-
 autoload -U edit-command-line && (
 zle -N  edit-command-line ;
 bindkey -M emacs "^X^E" edit-command-line ;
@@ -50,7 +48,11 @@ bindkey . rationalise-dot
 
 autoload zkbd
 
-source ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}
+if [ -f ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE} ]; then
+    source ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}
+else
+    source ~/.zkbd/$TERM
+fi
 
 [[ -n ${key[Backspace]} ]] && bindkey "${key[Backspace]}" backward-delete-char
 [[ -n ${key[Insert]} ]] && bindkey "${key[Insert]}" overwrite-mode
@@ -65,13 +67,15 @@ source ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}
 [[ -n ${key[Right]} ]] && bindkey "${key[Right]}" forward-char
 
 
-bindkey '5D' emacs-backward-word
-bindkey '5C' emacs-forward-word
+bindkey ';5D' emacs-backward-word
+bindkey ';5C' emacs-forward-word
 
 which go > /dev/null 2>&1 && (
     [ -d ~/go ] || mkdir ~/go ;
     export GOPATH=~/go ;
 )
+
+export EDITOR='vim'
 
 alias tm="tmux a"
 
