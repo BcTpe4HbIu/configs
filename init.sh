@@ -2,7 +2,7 @@
 
 set -e
 
-script_dir="$(dirname "$0")"
+script_dir="$(dirname $(realpath "$0"))"
 cd "$script_dir"
 
 # check if we are in right folder
@@ -25,6 +25,7 @@ if [ "$right_folder" != "$script_dir" ]; then
 fi
 
 git pull && git submodule update --init
+rm ~/.vim
 ln -sf "$(pwd)/vim" ~/.vim
 ln -sf "$(pwd)/vim/vimrc" ~/.vimrc
 ln -sf "$(pwd)/tmux.conf" ~/.tmux.conf
