@@ -10,3 +10,6 @@
 [submodule "vim/bundle/ansible-vim"]
 	path = vim/bundle/ansible-vim
 	url = https://github.com/pearofducks/ansible-vim
+[submodule "oh-my-zsh/custom/plugins/zsh-autosuggestions"]
+	path = oh-my-zsh/custom/plugins/zsh-autosuggestions
+	url = https://github.com/zsh-users/zsh-autosuggestions

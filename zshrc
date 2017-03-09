@@ -82,6 +82,8 @@ alias tm="tmux a"
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     export ZSH=$HOME/.dotfiles/oh-my-zsh
     ZSH_THEME="robbyrussell"
-    plugins=(git)
+    plugins=(git zsh-autosuggestions)
+    ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
     source $ZSH/oh-my-zsh.sh
+    bindkey '`' autosuggest-accept
 fi
