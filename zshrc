@@ -12,7 +12,7 @@ zstyle :compinstall filename '~/.zshrc'
 autoload -U colors && colors
 
 #PROMPT="%{$fg[red]%}%n%{$reset_color%}@%{$fg[cyan]%}%m %{$fg_no_bold[yellow]%}%1~ %{$reset_color%}%# "
-RPROMPT="[%{$fg_no_bold[yellow]%}%T%{$reset_color%}]"
+#RPROMPT="[%{$fg_no_bold[yellow]%}%T%{$reset_color%}]"
 
 zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
