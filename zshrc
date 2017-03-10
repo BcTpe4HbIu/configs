@@ -11,7 +11,7 @@ zstyle :compinstall filename '~/.zshrc'
 
 autoload -U colors && colors
 
-PROMPT="%{$fg[red]%}%n%{$reset_color%}@%{$fg[cyan]%}%m %{$fg_no_bold[yellow]%}%1~ %{$reset_color%}%# "
+#PROMPT="%{$fg[red]%}%n%{$reset_color%}@%{$fg[cyan]%}%m %{$fg_no_bold[yellow]%}%1~ %{$reset_color%}%# "
 RPROMPT="[%{$fg_no_bold[yellow]%}%T%{$reset_color%}]"
 
 zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate
@@ -81,8 +81,10 @@ alias tm="tmux a"
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     export ZSH=$HOME/.dotfiles/oh-my-zsh
-    ZSH_THEME="robbyrussell"
-    plugins=(git zsh-autosuggestions)
+    #ZSH_THEME="robbyrussell"
+    #ZSH_THEME="bira"
+    ZSH_THEME="candy"
+    plugins=(git archlinux dockeri npm pip history-substring-search tmux web-search zsh-autosuggestions)
     ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
     source $ZSH/oh-my-zsh.sh
     bindkey '`' autosuggest-accept
