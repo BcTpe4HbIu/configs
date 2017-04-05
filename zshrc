@@ -84,7 +84,7 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     #ZSH_THEME="robbyrussell"
     #ZSH_THEME="bira"
     ZSH_THEME="candy"
-    plugins=(git archlinux dockeri npm pip history-substring-search tmux web-search zsh-autosuggestions)
+    plugins=(git archlinux dockeri npm pip history-substring-search tmux web-search zsh-autosuggestions fzf-zsh)
     ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
     source $ZSH/oh-my-zsh.sh
     bindkey '`' autosuggest-accept
