@@ -1,18 +1,10 @@
-# Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
 HISTSIZE=1000
 SAVEHIST=1000
 bindkey -e
-# End of lines configured by zsh-newuser-install
-# The following lines were added by compinstall
 zstyle :compinstall filename '~/.zshrc'
 
-# End of lines added by compinstall
-
 autoload -U colors && colors
-
-#PROMPT="%{$fg[red]%}%n%{$reset_color%}@%{$fg[cyan]%}%m %{$fg_no_bold[yellow]%}%1~ %{$reset_color%}%# "
-#RPROMPT="[%{$fg_no_bold[yellow]%}%T%{$reset_color%}]"
 
 zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
@@ -21,14 +13,6 @@ zstyle ':completion:*' verbose true
 zstyle :compinstall filename '~/.zshrc'
 
 autoload -Uz compinit && compinit
-
-autoload -U predict-on && (
-zle -N predict-on ;
-zle -N predict-off ;
-bindkey -M emacs "^X^Z" predict-on ;
-bindkey -M emacs "^Z" predict-off ;
-)
-
 
 autoload -U edit-command-line && (
 zle -N  edit-command-line ;
@@ -77,15 +61,19 @@ which go > /dev/null 2>&1 && (
 
 export EDITOR='vim'
 
-alias tm="tmux a"
+test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
+
+setopt HIST_FIND_NO_DUPS
+DISABLE_UPDATE_PROMPT=true
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     export ZSH=$HOME/.dotfiles/oh-my-zsh
     #ZSH_THEME="robbyrussell"
     #ZSH_THEME="bira"
     ZSH_THEME="candy"
-    plugins=(git archlinux dockeri npm pip history-substring-search tmux web-search zsh-autosuggestions fzf-zsh)
+    plugins=(git archlinux docker npm pip tmux web-search zsh-autosuggestions fzf-zsh)
     ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
     source $ZSH/oh-my-zsh.sh
     bindkey '`' autosuggest-accept
 fi
+
