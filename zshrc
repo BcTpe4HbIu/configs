@@ -77,3 +77,6 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     bindkey '`' autosuggest-accept
 fi
 
+fpath=( ~/.dotfiles/zfunc $fpath )
+autoload -Uz ssh-clean
+

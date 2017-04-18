@@ -1,1 +1,2 @@
 alias tm=tmux a
+alias dorun=docker run -ti --rm

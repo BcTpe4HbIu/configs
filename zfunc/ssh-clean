@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+function ssh-clean {
+    if [ -z $1 ] ; then
+        print specify line number!
+        return 1
+    fi
+    sed -i ${1}d ~/.ssh/known_hosts
+}
+
