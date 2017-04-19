@@ -1,2 +1,3 @@
-alias tm=tmux a
-alias dorun=docker run -ti --rm
+alias tm='tmux a'
+alias dorun='docker run -ti --rm'
+alias gt='gnome-terminal'
