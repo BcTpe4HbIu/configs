@@ -64,10 +64,11 @@ export EDITOR='vim'
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
 
 setopt HIST_FIND_NO_DUPS
-DISABLE_UPDATE_PROMPT=true
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     export ZSH=$HOME/.dotfiles/oh-my-zsh
+    export DISABLE_UPDATE_PROMPT=true
+    export DISABLE_AUTO_UPDATE=true
     #ZSH_THEME="robbyrussell"
     #ZSH_THEME="bira"
     ZSH_THEME="candy"
