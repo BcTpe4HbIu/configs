@@ -61,8 +61,6 @@ which go > /dev/null 2>&1 && (
 
 export EDITOR='vim'
 
-test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
-
 setopt HIST_FIND_NO_DUPS
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
@@ -80,4 +78,8 @@ fi
 
 fpath=( ~/.dotfiles/zfunc $fpath )
 autoload -Uz ssh-clean
+
+test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
+test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
+test -f $HOME/.dotfiles/local.zsh && source $HOME/.dotfiles/local.zsh
 
