@@ -61,6 +61,10 @@ which go > /dev/null 2>&1 && (
 
 export EDITOR='vim'
 
+if [ "$TERM"=="xterm" ] ; then
+    export TERM=xterm-256color
+fi
+
 setopt HIST_FIND_NO_DUPS
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
