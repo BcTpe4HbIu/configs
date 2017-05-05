@@ -1,6 +1,6 @@
 HISTFILE=~/.histfile
-HISTSIZE=1000
-SAVEHIST=1000
+HISTSIZE=50000
+SAVEHIST=100000
 bindkey -e
 zstyle :compinstall filename '~/.zshrc'
 
@@ -66,6 +66,12 @@ if [ "$TERM"=="xterm" ] ; then
 fi
 
 setopt HIST_FIND_NO_DUPS
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_SAVE_NO_DUPS
+setopt SHARE_HISTORY
+setopt INC_APPEND_HISTORY
+
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     export ZSH=$HOME/.dotfiles/oh-my-zsh
