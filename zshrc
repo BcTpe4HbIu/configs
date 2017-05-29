@@ -2,7 +2,6 @@ HISTFILE=~/.histfile
 HISTSIZE=50000
 SAVEHIST=100000
 bindkey -e
-zstyle :compinstall filename '~/.zshrc'
 
 autoload -U colors && colors
 
@@ -86,8 +85,19 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     bindkey '`' autosuggest-accept
 fi
 
+typeset -U fpath
 fpath=( ~/.dotfiles/zfunc $fpath )
 autoload -Uz ssh-clean
+
+autoload -Uz _pass
+compdef _pass  pass
+
+compdef _pass workpass
+zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
+workpass() {
+    PASSWORD_STORE_DIR=$HOME/.workpass pass $@
+}
+
 
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
 test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
