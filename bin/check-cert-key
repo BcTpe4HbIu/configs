@@ -8,6 +8,9 @@ fi
 cert_md5=$(openssl x509 -noout -modulus -in "$1" | openssl md5)
 key_md5=$(openssl rsa -noout -modulus -in "$2" | openssl md5)
 
+print Cert md5: $cert_md5
+print Key md5: $key_md5
+
 if [[ "$cert_md5" != "$key_md5" ]]; then
     print "Cert not matching with key!"
     exit 2
