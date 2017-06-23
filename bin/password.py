@@ -11,8 +11,6 @@ def main():
 
     args = parser.parse_args()
 
-    if args.length < 8:
-        raise Exception('Password must be longer than 8 chars')
     alphabet = string.ascii_letters + string.digits
     password = ''.join(choice(alphabet) for i in range(args.length))
 
