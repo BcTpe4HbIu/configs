@@ -87,16 +87,18 @@ fi
 
 typeset -U fpath
 fpath=( ~/.dotfiles/zfunc $fpath )
+
 autoload -Uz ssh-clean
 
 autoload -Uz _pass
 compdef _pass  pass
-
 compdef _pass workpass
 zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
 workpass() {
     PASSWORD_STORE_DIR=$HOME/.workpass pass $@
 }
+
+autoload -Uz weather
 
 
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
