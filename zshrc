@@ -53,10 +53,10 @@ fi
 bindkey ';5D' emacs-backward-word
 bindkey ';5C' emacs-forward-word
 
-which go > /dev/null 2>&1 && (
+if [ ! -z "$(which go)" ] ; then
     [ -d ~/go ] || mkdir ~/go ;
     export GOPATH=~/go ;
-)
+fi
 
 export EDITOR='vim'
 
