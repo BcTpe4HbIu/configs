@@ -31,3 +31,6 @@
 [submodule "vim/bundle/vim-sort-motion"]
 	path = vim/bundle/vim-sort-motion
 	url = https://github.com/christoomey/vim-sort-motion.git
+[submodule "vim/bundle/vim-editorconfig"]
+	path = vim/bundle/vim-editorconfig
+	url = https://github.com/sgur/vim-editorconfig.git
