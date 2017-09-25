@@ -59,6 +59,7 @@ if [ ! -z "$(which go)" ] ; then
 fi
 
 export EDITOR='vim'
+export GPG_TTY=$(tty)
 
 if [ "$TERM"=="xterm" ] ; then
     export TERM=xterm-256color
