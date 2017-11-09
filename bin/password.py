@@ -7,16 +7,17 @@ import crypt
 def main():
     parser = argparse.ArgumentParser(description='Generate password')
     parser.add_argument('-l','--length', type=int, default=8, help='password length')
-    parser.add_argument('--linux', action='store_true', help='output linux hash')
+    parser.add_argument('-p','--password', type=str, help='password')
 
     args = parser.parse_args()
 
     alphabet = string.ascii_letters + string.digits
     password = ''.join(choice(alphabet) for i in range(args.length))
+    if args.password:
+        password = args.password
 
     print("Password:",password)
-    if args.linux:
-        print(crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512)))
+    print("sha512:", crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512)))
 
 
 
