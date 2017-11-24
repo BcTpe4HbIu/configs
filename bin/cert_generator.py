@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import argparse
 import logging
 import sys
 from abc import ABC, abstractmethod
@@ -28,6 +27,8 @@ class X509Creator(ABC):
         self._key = None
         self._object = None
 
+        self._x509_extensions = list()
+
     def _generate_key(self):
 
         if self._key_type == "rsa":
@@ -52,7 +53,7 @@ class X509Creator(ABC):
 
     def load_key(self, content: str, passphrase: str = None):
         logging.info('Loading existing private key')
-        self._key = crypto.load_privatekey(content, passphrase=passphrase)
+        self._key = crypto.load_privatekey(crypto.FILETYPE_PEM, content, passphrase=passphrase)
 
     def _fill_subject(self):
         logging.info('Filling subject')
@@ -74,10 +75,7 @@ class X509Creator(ABC):
 
     def _fill_extensions(self):
         logging.info('Filling extensions')
-        x509_extensions = ([
-            crypto.X509Extension(b"keyUsage", False, b"Digital Signature, Non Repudiation, Key Encipherment"),
-            crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
-        ])
+        x509_extensions = self._x509_extensions
 
         if self._alt:
             sans = []
@@ -87,7 +85,9 @@ class X509Creator(ABC):
             sans_str = ", ".join(sans)
             sans_bytes = bytes(sans_str, 'utf8')
             x509_extensions.append(crypto.X509Extension(b"subjectAltName", False, sans_bytes))
-        self._object.add_extensions(x509_extensions)
+
+        if x509_extensions:
+            self._object.add_extensions(x509_extensions)
 
     @abstractmethod
     def generate(self):
@@ -107,7 +107,7 @@ class X509Creator(ABC):
 
     def dump_object(self, file):
         logging.info('Writing out object')
-        if self._object is crypto.X509Req:
+        if isinstance(self._object, crypto.X509Req):
             content = crypto.dump_certificate_request(crypto.FILETYPE_PEM, self._object)
         else:
             content = crypto.dump_certificate(crypto.FILETYPE_PEM, self._object)
@@ -121,6 +121,13 @@ class RequestGenerator(X509Creator):
 
 
 class CertificateGenerator(X509Creator):
+    def __init__(self, *args, **kwargs):
+        super(CertificateGenerator, self).__init__(*args, **kwargs)
+        self._x509_extensions = ([
+            crypto.X509Extension(b"keyUsage", False, b"Digital Signature, Non Repudiation, Key Encipherment"),
+            crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
+        ])
+
     def generate(self):
         self._object = crypto.X509()
         super(CertificateGenerator, self).generate()
@@ -128,83 +135,6 @@ class CertificateGenerator(X509Creator):
         self._object.gmtime_adj_notBefore(0)
         self._object.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
         self._object.set_issuer(self._object.get_subject())
-
-
-def generateKey(type, bits):
-    key = crypto.PKey()
-    key.generate_key(type, bits)
-    return key
-
-
-def generateRequest(key, cn, email=None, country=None, state=None, locality=None, org=None, ou=None, alt=None):
-    x509_extensions = ([
-        crypto.X509Extension(b"keyUsage", False, b"Digital Signature, Non Repudiation, Key Encipherment"),
-        crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
-    ])
-
-    sans = []
-    if alt:
-        for i in alt:
-            sans.append("DNS: %s" % i)
-        sans_str = ", ".join(sans)
-        sans_bytes = bytes(sans_str, 'utf8')
-        x509_extensions.append(crypto.X509Extension(b"subjectAltName", False, sans_bytes))
-
-    req = crypto.X509Req()
-    subj = req.get_subject()
-    subj.CN = cn
-    if email:
-        subj.emailAddress = email
-    if country:
-        subj.countryName = country
-    if state:
-        subj.stateOrProvinceName = state
-    if locality:
-        subj.localityName = locality
-    if org:
-        subj.organizationName = org
-    if ou:
-        subj.organizationalUnitName = ou
-    req.add_extensions(x509_extensions)
-    req.set_pubkey(key)
-    req.sign(key, b"sha256")
-
-    return req
-
-
-def main():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    parser = argparse.ArgumentParser(description="Create certificate")
-    parser.add_argument("common_name")
-    parser.add_argument("keyout", help='Key file name', type=argparse.FileType('bx'))
-    parser.add_argument("reqout", help='Request file name', type=argparse.FileType('bx'))
-    parser.add_argument("--email")
-    parser.add_argument("--country", default="RU")
-    parser.add_argument("--state")
-    parser.add_argument("--locality")
-    parser.add_argument("--org")
-    parser.add_argument("--ou")
-    parser.add_argument("--alt", action='append', help='DNS ALT names')
-    parser.add_argument("--keytype", default='rsa', help='Key type (rsa,dsa)', choices=['rsa', 'dsa'])
-    parser.add_argument("--keylen", default=2048, help='Key length (2048)', type=int)
-
-    args = parser.parse_args()
-
-    logging.info("Generating key...")
-    if args.keytype == "rsa":
-        keytype = crypto.TYPE_RSA
-    elif args.keytype == "dsa":
-        logging.warning("Using dsa key is not recommended!")
-        keytype = crypto.TYPE_DSA
-    key = generateKey(keytype, args.keylen)
-    logging.info("Generating request...")
-    req = generateRequest(key, args.common_name, email=args.email, country=args.country, state=args.state,
-                          locality=args.locality, org=args.org, ou=args.ou, alt=args.alt)
-    logging.info("Writing out key...")
-    args.keyout.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
-    logging.info("Writing out request...")
-    args.reqout.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
-    logging.info("Done.")
 
 
 @click.command()
@@ -224,12 +154,12 @@ def main():
 @click.option('--alt', multiple=True)
 def cli(common_name, out, keyout, key, email, country, state, locality, org, ou, selfsigned, keytype, keysize, alt):
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    kwargs = dict(cn=common_name, email=email, country=country, state=state, locality=locality,
+                  org=org, ou=ou, alt=alt, key_type=keytype, key_size=keysize)
     if selfsigned:
-        generator = CertificateGenerator(common_name, email=email, country=country, state=state, locality=locality,
-                                         org=org, ou=ou, alt=alt, key_type=keytype, key_size=keysize)
+        generator = CertificateGenerator(**kwargs)
     else:
-        generator = RequestGenerator(common_name, email=email, country=country, state=state, locality=locality,
-                                     org=org, ou=ou, alt=alt)
+        generator = RequestGenerator(**kwargs)
 
     if key:
         generator.load_key(key.read())
