@@ -1,4 +1,4 @@
 alias tm='tmux a'
 alias dorun='docker run -ti --rm'
 alias ssh_npk='ssh -o PubkeyAuthentication=no'
-alias rdp='xfreerpd /size:1920x1080 +clipboard +smart-sizing'
+alias rdp='xfreerdp /size:1920x1080 +clipboard +smart-sizing'
