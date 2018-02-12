@@ -9,7 +9,7 @@ function iwatch {
         exit 1
     fi
 
-    inotifywait -q --format '%f' -m -r -e close_write . \
+    inotifywait -q --format '%w%f' -m -r -e close_write . \
         | grep -P --line-buffered $PATTERN \
         | xargs -I{} -r sh -c "echo [\$(date -Is)] $COMMAND && $COMMAND"
 }
