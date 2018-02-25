@@ -34,3 +34,6 @@
 [submodule "vim/bundle/vim-editorconfig"]
 	path = vim/bundle/vim-editorconfig
 	url = https://github.com/sgur/vim-editorconfig.git
+[submodule "vim/bundle/Dockerfile.vim"]
+	path = vim/bundle/Dockerfile.vim
+	url = https://github.com/ekalinin/Dockerfile.vim.git
