@@ -1,0 +1,1 @@
+nnoremap ,hdrlic :0read !$HOME/.vim/templates/header_license.tmpl.sh<CR>
