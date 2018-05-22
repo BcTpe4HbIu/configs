@@ -59,17 +59,7 @@ if [ $? -eq 0 ] ; then
     export GOPATH=~/go ;
 fi
 
-which gpg-agent >/dev/null 2>&1
-if [ $? -eq 0 ] ; then
-    # Set GPG TTY
-    export GPG_TTY=$(tty)
-
-    # Refresh gpg-agent tty in case user switches into an X session
-    gpg-connect-agent updatestartuptty /bye >/dev/null
-fi
-
 export EDITOR='vim'
-export GPG_TTY=$(tty)
 
 if [ "$TERM"=="xterm" ] ; then
     export TERM=xterm-256color
