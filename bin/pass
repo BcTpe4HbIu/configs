@@ -156,12 +156,12 @@ clip() {
 	# trailing new lines.
 	local sleep_argv0="password store sleep on display $DISPLAY"
 	pkill -f "^$sleep_argv0" 2>/dev/null && sleep 0.5
-	local before="$(xclip -o -selection "$X_SELECTION" 2>/dev/null | base64)"
+	local before="$(xclip -o -selection "$X_SELECTION" 2>/dev/null | $BASE64)"
 	echo -n "$1" | xclip -selection "$X_SELECTION" || die "Error: Could not copy data to the clipboard"
 	(
 		( exec -a "$sleep_argv0" bash <<<"trap 'kill %1' TERM; sleep '$CLIP_TIME' & wait" )
-		local now="$(xclip -o -selection "$X_SELECTION" | base64)"
-		[[ $now != $(echo -n "$1" | base64) ]] && before="$now"
+		local now="$(xclip -o -selection "$X_SELECTION" | $BASE64)"
+		[[ $now != $(echo -n "$1" | $BASE64) ]] && before="$now"
 
 		# It might be nice to programatically check to see if klipper exists,
 		# as well as checking for other common clipboard managers. But for now,
@@ -172,7 +172,7 @@ clip() {
 		# so we axe it here:
 		qdbus org.kde.klipper /klipper org.kde.klipper.klipper.clearClipboardHistory &>/dev/null
 
-		echo "$before" | base64 -d | xclip -selection "$X_SELECTION"
+		echo "$before" | $BASE64 -d | xclip -selection "$X_SELECTION"
 	) >/dev/null 2>&1 & disown
 	echo "Copied $2 to clipboard. Will clear in $CLIP_TIME seconds."
 }
@@ -224,6 +224,7 @@ tmpdir() {
 }
 GETOPT="getopt"
 SHRED="shred -f -z"
+BASE64="base64"
 
 source "$(dirname "$0")/platform/$(uname | cut -d _ -f 1 | tr '[:upper:]' '[:lower:]').sh" 2>/dev/null # PLATFORM_FUNCTION_FILE
 
@@ -241,7 +242,7 @@ cmd_version() {
 	============================================
 	= pass: the standard unix password manager =
 	=                                          =
-	=                  v1.7.2                  =
+	=                  v1.7.3                  =
 	=                                          =
 	=             Jason A. Donenfeld           =
 	=               Jason@zx2c4.com            =
@@ -363,8 +364,8 @@ cmd_show() {
 	check_sneaky_paths "$path"
 	if [[ -f $passfile ]]; then
 		if [[ $clip -eq 0 && $qrcode -eq 0 ]]; then
-			pass="$($GPG -d "${GPG_OPTS[@]}" "$passfile")" || exit $?
-			echo "$pass"
+			pass="$($GPG -d "${GPG_OPTS[@]}" "$passfile" | $BASE64)" || exit $?
+			echo "$pass" | $BASE64 -d
 		else
 			[[ $selected_line =~ ^[0-9]+$ ]] || die "Clip location '$selected_line' is not a number."
 			pass="$($GPG -d "${GPG_OPTS[@]}" "$passfile" | tail -n +${selected_line} | head -n 1)" || exit $?
@@ -447,7 +448,7 @@ cmd_insert() {
 			read -r -p "Retype password for $path: " -s password_again || exit 1
 			echo
 			if [[ $password == "$password_again" ]]; then
-				$GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile" "${GPG_OPTS[@]}" <<<"$password" || die "Password encryption aborted."
+				echo "$password" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile" "${GPG_OPTS[@]}" || die "Password encryption aborted."
 				break
 			else
 				die "Error: the entered passwords do not match."
@@ -456,7 +457,7 @@ cmd_insert() {
 	else
 		local password
 		read -r -p "Enter password for $path: " -e password
-		$GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile" "${GPG_OPTS[@]}" <<<"$password" || die "Password encryption aborted."
+		echo "$password" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile" "${GPG_OPTS[@]}" || die "Password encryption aborted."
 	fi
 	git_add_file "$passfile" "Add given password for $path to store."
 }
@@ -473,7 +474,6 @@ cmd_edit() {
 
 	tmpdir #Defines $SECURE_TMPDIR
 	local tmp_file="$(mktemp -u "$SECURE_TMPDIR/XXXXXX")-${path//\//-}.txt"
-
 
 	local action="Add"
 	if [[ -f $passfile ]]; then
@@ -519,7 +519,7 @@ cmd_generate() {
 	read -r -n $length pass < <(LC_ALL=C tr -dc "$characters" < /dev/urandom)
 	[[ ${#pass} -eq $length ]] || die "Could not generate password from /dev/urandom."
 	if [[ $inplace -eq 0 ]]; then
-		$GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile" "${GPG_OPTS[@]}" <<<"$pass" || die "Password encryption aborted."
+		echo "$pass" | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile" "${GPG_OPTS[@]}" || die "Password encryption aborted."
 	else
 		local passfile_temp="${passfile}.tmp.${RANDOM}.${RANDOM}.${RANDOM}.${RANDOM}.--"
 		if { echo "$pass"; $GPG -d "${GPG_OPTS[@]}" "$passfile" | tail -n +2; } | $GPG -e "${GPG_RECIPIENT_ARGS[@]}" -o "$passfile_temp" "${GPG_OPTS[@]}"; then
@@ -538,7 +538,7 @@ cmd_generate() {
 	elif [[ $qrcode -eq 1 ]]; then
 		qrcode "$pass" "$path"
 	else
-		printf "\e[1m\e[37mThe generated password for \e[4m%s\e[24m is:\e[0m\n\e[1m\e[93m%s\e[0m\n" "$path" "$pass"
+		printf "\e[1mThe generated password for \e[4m%s\e[24m is:\e[0m\n\e[1m\e[93m%s\e[0m\n" "$path" "$pass"
 	fi
 }
 
