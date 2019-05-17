@@ -124,7 +124,7 @@ class CertificateGenerator(X509Creator):
     def __init__(self, *args, **kwargs):
         super(CertificateGenerator, self).__init__(*args, **kwargs)
         self._x509_extensions = ([
-            crypto.X509Extension(b"keyUsage", False, b"Digital Signature, Non Repudiation, Key Encipherment"),
+            crypto.X509Extension(b"keyUsage", False, b"Digital Signature,Non Repudiation,Key Encipherment"),
             crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
         ])
 
