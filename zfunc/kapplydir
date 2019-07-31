@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+kapplydir() {
+    [ -z "$1" ] && return
+    find $1 -type f -regex '.*\.ya?ml' | klsapply
+}
+
