@@ -100,8 +100,8 @@ workpass() {
 }
 
 autoload -Uz weather
-
 autoload -Uz iwatch
+autoload -Uz kapplydir
 
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
 test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
