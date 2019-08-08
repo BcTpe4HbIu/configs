@@ -1,7 +1,6 @@
 #!/bin/zsh
 
 klsapply() {
-    [ -z "$1" ] && return
     xargs -rn1 kubectl apply -f
 }
 
