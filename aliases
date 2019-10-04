@@ -10,3 +10,5 @@ alias ps_rss='ps -eo pmem,comm,pid,maj_flt,min_flt,rss,vsz --sort -rss | numfmt 
 alias kubectl_list_all_in_namespace='kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -n '
 alias copy='xclip -selection clipboard'
 alias kapitan='docker run -t --rm -v $(pwd):/src:delegated -u $(id -u) deepmind/kapitan'
+alias gpgssh='export SSH_AUTH_SOCK=/run/user/1000/gnupg/S.gpg-agent.ssh'
+alias klsapply='xargs -n1 kubectl apply -f'
