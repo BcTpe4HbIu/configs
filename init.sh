@@ -31,4 +31,5 @@ ln -sf "$(pwd)/tmux.conf" ~/.tmux.conf
 ln -sf "$(pwd)/zshrc" ~/.zshrc
 ln -sf "$(pwd)/zshenv" ~/.zshenv
 ln -sf "$(pwd)/zprofile" ~/.zprofile
+
 which fzf >/dev/null 2>&1 || echo Install fzf!
