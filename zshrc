@@ -53,7 +53,7 @@ fi
 bindkey ';5D' emacs-backward-word
 bindkey ';5C' emacs-forward-word
 
-which go >/dev/null 2>&1
+which go 2>&1 >/dev/null
 if [ $? -eq 0 ] ; then
     [ -d ~/go ] || mkdir ~/go ;
     export GOPATH=~/go ;
@@ -106,6 +106,7 @@ autoload -Uz iwatch
 autoload -Uz kapplydir
 autoload -Uz klsapply
 autoload -Uz pwgen_ansible
+autoload -Uz wsshuttle
 
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
 test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
