@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+function sslpinhash {
+    pubkey=$(cat -)
+    if [ -z $pubkey ] ; then
+        echo Expected pub key on stdin 1>&2
+        return 1
+    fi
+    echo $pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64
+
+}
+
