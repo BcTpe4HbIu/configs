@@ -11,6 +11,7 @@ from urllib.parse import quote
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("wdir", help="Path to wallpapers folder")
+    parser.add_argument("--screensaver", action="store_true", help="Set screensaver, not background")
     args = parser.parse_args()
     all_wallpapers = list()
 
@@ -29,7 +30,10 @@ def main():
     uri = f"file://{quote(full_path)}"
     print(f"Chosen {uri} wallpaper")
 
-    subprocess.check_call(["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri])
+    if args.screensaver:
+        subprocess.check_call(["gsettings", "set", "org.gnome.desktop.screensaver", "picture-uri", uri])
+    else:
+        subprocess.check_call(["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri])
 
 
 if __name__ == "__main__":
