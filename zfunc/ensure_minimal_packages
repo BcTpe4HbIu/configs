@@ -1,6 +1,7 @@
 #!/bin/zsh
 
 ensure_minimal_packages() {
-  pacman -Sy ttf-roboto ttf-roboto-mono tmux fzf curl sshuttle kubectl \
+  sudo pacman -Sy --needed ttf-roboto ttf-roboto-mono ttf-dejavu \
+    tmux fzf curl kubectl \
     pass pass-otp pwgen
 }
