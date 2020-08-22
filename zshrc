@@ -108,8 +108,8 @@ autoload -Uz klsapply
 autoload -Uz pwgen_ansible
 autoload -Uz wsshuttle
 autoload -Uz sslpinhash
+autoload -Uz ensure_minimal_packages
 
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
 test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
 test -f $HOME/.dotfiles/local.zsh && source $HOME/.dotfiles/local.zsh
-
