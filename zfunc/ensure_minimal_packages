@@ -2,6 +2,7 @@
 
 ensure_minimal_packages() {
   sudo pacman -Sy --needed ttf-roboto ttf-roboto-mono ttf-dejavu \
+    ttf-opensans noto-fonts noto-fonts-emoji noto-fonts-cjk \
     tmux fzf curl kubectl \
     pass pass-otp pwgen
 }

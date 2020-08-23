@@ -35,3 +35,4 @@ mkdir -p ~/.config/fontconfig
 ln -sf "$(pwd)/fonts.conf" ~/.config/fontconfig/fonts.conf
 
 which fzf >/dev/null 2>&1 || echo Install fzf!
+
