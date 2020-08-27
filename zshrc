@@ -14,7 +14,7 @@ zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]} m:{[:lower:][:
 zstyle ':completion:*' verbose true
 zstyle :compinstall filename '~/.zshrc'
 
-autoload -Uz compinit && compinit
+# autoload -Uz compinit && compinit
 
 autoload -U edit-command-line && (
 zle -N  edit-command-line ;
@@ -56,12 +56,6 @@ fi
 bindkey ';5D' emacs-backward-word
 bindkey ';5C' emacs-forward-word
 
-which go 2>&1 >/dev/null
-if [ $? -eq 0 ] ; then
-    [ -d ~/go ] || mkdir ~/go ;
-    export GOPATH=~/go ;
-fi
-
 export EDITOR='vim'
 
 if [ "$TERM"=="xterm" ] ; then
@@ -91,8 +85,6 @@ fi
 
 autoload -Uz ssh-clean
 
-compdef _kubectl kubectl
-
 autoload -Uz _pass
 compdef _pass  pass
 compdef _pass workpass
@@ -109,6 +101,12 @@ autoload -Uz pwgen_ansible
 autoload -Uz wsshuttle
 autoload -Uz sslpinhash
 autoload -Uz ensure_minimal_packages
+
+which go 2>&1 >/dev/null
+if [ $? -eq 0 ] ; then
+    [ -d ~/go ] || mkdir ~/go ;
+    export GOPATH=~/go ;
+fi
 
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
 test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh

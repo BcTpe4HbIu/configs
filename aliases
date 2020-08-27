@@ -13,3 +13,5 @@ alias kapitan='docker run -t --rm -v $(pwd):/src:delegated -u $(id -u) deepmind/
 alias gpgssh='export SSH_AUTH_SOCK=/run/user/1000/gnupg/S.gpg-agent.ssh'
 alias klsapply='xargs -n1 kubectl apply -f'
 alias kb='systemctl --user start msikeyboard'
+alias kctx=kubectx
+alias kns=kubens
