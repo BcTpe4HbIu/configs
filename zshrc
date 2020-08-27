@@ -3,6 +3,9 @@ HISTSIZE=50000
 SAVEHIST=100000
 bindkey -e
 
+typeset -U fpath
+fpath=( ~/.dotfiles/zfunc $fpath )
+
 autoload -U colors && colors
 
 zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate
@@ -85,9 +88,6 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
     source $ZSH/oh-my-zsh.sh
     bindkey '`' autosuggest-accept
 fi
-
-typeset -U fpath
-fpath=( ~/.dotfiles/zfunc $fpath )
 
 autoload -Uz ssh-clean
 
