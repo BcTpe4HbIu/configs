@@ -101,6 +101,7 @@ autoload -Uz pwgen_ansible
 autoload -Uz wsshuttle
 autoload -Uz sslpinhash
 autoload -Uz ensure_minimal_packages
+autoload -Uz ciscossh
 
 which go 2>&1 >/dev/null
 if [ $? -eq 0 ] ; then

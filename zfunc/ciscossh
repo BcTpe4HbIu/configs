@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+function ciscossh() {
+  ssh -oKexAlgorithms=+diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1 -opreferredauthentications=keyboard-interactive -J zerowork $*
+}
