@@ -71,16 +71,19 @@ setopt INC_APPEND_HISTORY
 
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
-    export ZSH=$HOME/.dotfiles/oh-my-zsh
-    export DISABLE_UPDATE_PROMPT=true
-    export DISABLE_AUTO_UPDATE=true
-    #ZSH_THEME="robbyrussell"
-    #ZSH_THEME="bira"
-    ZSH_THEME="candy"
-    plugins=(git archlinux docker npm pip tmux web-search zsh-autosuggestions fzf clbin helm terraform aws zsh_reload)
-    ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
-    source $ZSH/oh-my-zsh.sh
-    bindkey '`' autosuggest-accept
+  for p in $(ls $HOME/.dotfiles/oh-my-zsh-extra/plugins); do
+    ln -fs $HOME/.dotfiles/oh-my-zsh-extra/plugins/$p $HOME/.dotfiles/oh-my-zsh/custom/plugins/
+  done
+  export ZSH=$HOME/.dotfiles/oh-my-zsh
+  export DISABLE_UPDATE_PROMPT=true
+  export DISABLE_AUTO_UPDATE=true
+  #ZSH_THEME="robbyrussell"
+  #ZSH_THEME="bira"
+  ZSH_THEME="candy"
+  plugins=(git archlinux docker npm pip tmux web-search zsh-autosuggestions fzf clbin helm terraform aws zsh_reload)
+  ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+  source $ZSH/oh-my-zsh.sh
+  bindkey '`' autosuggest-accept
 fi
 
 autoload -Uz ssh-clean

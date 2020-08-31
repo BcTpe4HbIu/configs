@@ -24,7 +24,7 @@ if [ "$right_folder" != "$script_dir" ]; then
     exit $?
 fi
 
-git pull && git submodule update --init
+git pull && git submodule update --init --recursive
 ln -sfT "$(pwd)/vim" ~/.vim
 ln -sf "$(pwd)/vim/vimrc" ~/.vimrc
 ln -sf "$(pwd)/tmux.conf" ~/.tmux.conf
@@ -35,4 +35,3 @@ mkdir -p ~/.config/fontconfig
 ln -sf "$(pwd)/fonts.conf" ~/.config/fontconfig/fonts.conf
 
 which fzf >/dev/null 2>&1 || echo Install fzf!
-
