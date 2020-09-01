@@ -34,3 +34,6 @@
 [submodule "oh-my-zsh-extra/plugins/zsh-autosuggestions"]
 	path = oh-my-zsh-extra/plugins/zsh-autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions
+[submodule "oh-my-zsh-extra/powerlevel10k"]
+	path = oh-my-zsh-extra/powerlevel10k
+	url = https://github.com/romkatv/powerlevel10k.git

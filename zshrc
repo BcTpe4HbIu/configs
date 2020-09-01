@@ -77,11 +77,12 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   export DISABLE_AUTO_UPDATE=true
   #ZSH_THEME="robbyrussell"
   #ZSH_THEME="bira"
-  ZSH_THEME="candy"
+  ZSH_THEME="powerlevel10k/powerlevel10k"
   plugins=(git archlinux docker npm pip tmux web-search zsh-autosuggestions fzf helm terraform aws zsh_reload)
   ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
   source $ZSH/oh-my-zsh.sh
   bindkey '`' autosuggest-accept
+  source $HOME/.dotfiles/p10k.zsh
 fi
 
 autoload -Uz ssh-clean
