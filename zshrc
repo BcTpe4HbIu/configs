@@ -71,10 +71,8 @@ setopt INC_APPEND_HISTORY
 
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
-  for p in $(ls $HOME/.dotfiles/oh-my-zsh-extra/plugins); do
-    ln -fs $HOME/.dotfiles/oh-my-zsh-extra/plugins/$p $HOME/.dotfiles/oh-my-zsh/custom/plugins/
-  done
   export ZSH=$HOME/.dotfiles/oh-my-zsh
+  export ZSH_CUSTOM=$HOME/.dotfiles/oh-my-zsh-extra
   export DISABLE_UPDATE_PROMPT=true
   export DISABLE_AUTO_UPDATE=true
   #ZSH_THEME="robbyrussell"
