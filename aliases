@@ -15,3 +15,4 @@ alias klsapply='xargs -n1 kubectl apply -f'
 alias kb='systemctl --user start msikeyboard'
 alias kctx=kubectx
 alias kns=kubens
+alias k=kubectl
