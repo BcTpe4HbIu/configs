@@ -1,7 +1,4 @@
 #!/bin/zsh
 
-kapplydir() {
-    [ -z "$1" ] && return
-    find $1 -type f -regex '.*\.ya?ml' | xargs -rn1 kubectl apply -f
-}
-
+[ -z "$1" ] && return
+find $1 -type f -regex '.*\.ya?ml' | xargs -rn1 kubectl apply -f

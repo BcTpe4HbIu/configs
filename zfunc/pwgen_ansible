@@ -1,10 +1,8 @@
 #!/bin/zsh
 
-function pwgen_ansible {
-    LEN=${1:-8}
-    shift
-    PARAMS=${@:-"-B"}
-    password=$(pwgen $PARAMS $LEN)
-    echo Password: $password >&2
-    echo -n $password | ansible-vault encrypt_string --vault-id @vault_id.sh | cat -
-}
+LEN=${1:-8}
+shift
+PARAMS=${@:-"-B"}
+password=$(pwgen $PARAMS $LEN)
+echo Password: $password >&2
+echo -n $password | ansible-vault encrypt_string --vault-id @vault_id.sh | cat -

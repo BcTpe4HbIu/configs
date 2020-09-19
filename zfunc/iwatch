@@ -1,15 +1,13 @@
 #!/bin/zsh
 
-function iwatch {
-    PATTERN="$1"
-    COMMAND="$2"
+PATTERN="$1"
+COMMAND="$2"
 
-    if [ -z $PATTERN -o -z $COMMAND ]; then
-        echo Usage iwatch PATTERN COMMAND
-        exit 1
-    fi
+if [ -z $PATTERN -o -z $COMMAND ]; then
+    echo Usage iwatch PATTERN COMMAND
+    exit 1
+fi
 
-    inotifywait -q --format '%w%f' -m -r -e close_write . \
-        | grep -P --line-buffered $PATTERN \
-        | xargs -I{} -r sh -c "echo [\$(date -Is)] $COMMAND && $COMMAND"
-}
+inotifywait -q --format '%w%f' -m -r -e close_write . \
+    | grep -P --line-buffered $PATTERN \
+    | xargs -I{} -r sh -c "echo [\$(date -Is)] $COMMAND && $COMMAND"

@@ -1,5 +1,3 @@
 #!/bin/zsh
 
-function weather {
-    curl wttr.in/$@ | less
-}
+curl wttr.in/$@ | less

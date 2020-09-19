@@ -1,11 +1,9 @@
 #!/bin/zsh
 
-wsshuttle() {
-  params=$(workpass sshuttle/$* | head -n1)
-  echo ${=params}
-  if [ "x$params" = "x" ] ; then
-    echo not found params in workpass/$*
-    return
-  fi
-  sshuttle ${=params}
-}
+params=$(workpass sshuttle/$* | head -n1)
+echo ${=params}
+if [ "x$params" = "x" ] ; then
+  echo not found params in workpass/$*
+  return
+fi
+sshuttle ${=params}

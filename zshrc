@@ -4,7 +4,7 @@ SAVEHIST=100000
 bindkey -e
 
 typeset -U fpath
-fpath=( ~/.dotfiles/zfunc $fpath )
+fpath=( ~/.dotfiles/zfunc ~/.dotfiles/compdefs $fpath )
 
 autoload -U colors && colors
 
@@ -14,13 +14,10 @@ zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]} m:{[:lower:][:
 zstyle ':completion:*' verbose true
 zstyle :compinstall filename '~/.zshrc'
 
-# autoload -Uz compinit && compinit
-
 autoload -U edit-command-line && (
 zle -N  edit-command-line ;
 bindkey -M emacs "^X^E" edit-command-line ;
 )
-
 
 rationalise-dot() {
   if [[ $LBUFFER = *.. ]]; then
@@ -69,6 +66,7 @@ setopt HIST_SAVE_NO_DUPS
 setopt SHARE_HISTORY
 setopt INC_APPEND_HISTORY
 
+autoload -Uz ~/.dotfiles/zfunc/*
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   export ZSH=$HOME/.dotfiles/oh-my-zsh
@@ -85,25 +83,9 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   source $HOME/.dotfiles/p10k.zsh
 fi
 
-autoload -Uz ssh-clean
-
-autoload -Uz _pass
-compdef _pass  pass
+compdef _pass pass
 compdef _pass workpass
 zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
-workpass() {
-    PASSWORD_STORE_DIR=$HOME/.workpass pass $@
-}
-
-autoload -Uz weather
-autoload -Uz iwatch
-autoload -Uz kapplydir
-autoload -Uz klsapply
-autoload -Uz pwgen_ansible
-autoload -Uz wsshuttle
-autoload -Uz sslpinhash
-autoload -Uz ensure_minimal_packages
-autoload -Uz ciscossh
 
 which go 2>&1 >/dev/null
 if [ $? -eq 0 ] ; then

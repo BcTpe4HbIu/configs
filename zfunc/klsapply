@@ -1,6 +1,3 @@
 #!/bin/zsh
 
-klsapply() {
-    xargs -rn1 kubectl apply -f
-}
-
+xargs -rn1 kubectl apply -f

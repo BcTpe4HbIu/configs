@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+PASSWORD_STORE_DIR=$HOME/.workpass pass $@
