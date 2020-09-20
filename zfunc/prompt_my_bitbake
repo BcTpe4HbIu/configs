@@ -2,4 +2,3 @@
 
 [ -z $BBPATH ] && return
 p10k segment -t $(basename $BBPATH)
-# p10k segment -t "test" -f red

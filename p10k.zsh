@@ -49,7 +49,7 @@
     status                  # exit code of the last command
     command_execution_time  # duration of the last command
     background_jobs         # presence of background jobs
-    my_buildbake
+    my_bitbake
     direnv                  # direnv status (https://direnv.net/)
     asdf                    # asdf version manager (https://github.com/asdf-vm/asdf)
     virtualenv              # python virtual environment (https://docs.python.org/3/library/venv.html)
@@ -1641,8 +1641,8 @@
   # really need it.
   typeset -g POWERLEVEL9K_DISABLE_HOT_RELOAD=true
 
-  typeset -g POWERLEVEL9K_MY_BUILDBAKE_FOREGROUND=white
-  typeset -g POWERLEVEL9K_MY_BUILDBAKE_BACKGROUND=blue
+  typeset -g POWERLEVEL9K_MY_BITBAKE_FOREGROUND=white
+  typeset -g POWERLEVEL9K_MY_BITBAKE_BACKGROUND=blue
 
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
