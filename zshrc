@@ -76,7 +76,9 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   #ZSH_THEME="robbyrussell"
   #ZSH_THEME="bira"
   ZSH_THEME="powerlevel10k/powerlevel10k"
-  plugins=(git archlinux docker npm pip tmux web-search zsh-autosuggestions fzf helm terraform aws zsh_reload)
+  plugins=(web-search git archlinux docker npm yarn pip tmux \
+          zsh-autosuggestions fzf helm terraform aws heroku \
+          transfer django httpie docker docker-compose zsh_reload)
   ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
   source $ZSH/oh-my-zsh.sh
   bindkey '`' autosuggest-accept
