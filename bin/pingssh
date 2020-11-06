@@ -1,0 +1,15 @@
+#!/bin/bash
+
+[ -z "$1" ] && exit 1
+
+trap exit SIGINT
+
+echo -n "Waiting for $1 "
+while ! ping -c 1 -n -w 1 $1 &> /dev/null
+do
+    echo -n .
+done
+echo
+echo Server online
+
+ssh $1
