@@ -1,11 +1,16 @@
 #!/usr/bin/python
+import datetime
 import logging
-import sys
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 import click
-from OpenSSL import crypto
+from cryptography import x509
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKeyWithSerialization
+from cryptography.x509.base import CertificateSigningRequest, Certificate
+from cryptography.x509.oid import NameOID
 
 
 class X509Creator(ABC):
@@ -24,117 +29,125 @@ class X509Creator(ABC):
         self._cn = cn
         self._alt = alt
 
-        self._key = None
-        self._object = None
+        self._key = None  # type: Optional[RSAPrivateKeyWithSerialization]
+        self._subject = None  # type: Optional[x509.Name]
 
         self._x509_extensions = list()
 
     def _generate_key(self):
+        logging.info('Generating RSA key with %s bits', self._key_size)
+        self._key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=self._key_size,
+        )
 
-        if self._key_type == "rsa":
-            keytype = crypto.TYPE_RSA
-        elif self._key_type == "dsa":
-            logging.warning("Using dsa key is not recommended!")
-            keytype = crypto.TYPE_DSA
-        else:
-            logging.error('Unknown key type %s', self._key_type)
-            sys.exit(1)
-        logging.info('Generating %s key with %s bits', self._key_type, self._key_size)
-        self._key = crypto.PKey()
-        self._key.generate_key(keytype, self._key_size)
-
-    def _apply_key(self):
-        if self._object:
-            if not self._key:
-                self._generate_key()
-            logging.info('Applying key')
-            self._object.set_pubkey(self._key)
-            self._object.sign(self._key, "sha256")
-
-    def load_key(self, content: str, passphrase: str = None):
+    def load_key(self, content: bytes, passphrase: str = None):
         logging.info('Loading existing private key')
-        self._key = crypto.load_privatekey(crypto.FILETYPE_PEM, content, passphrase=passphrase)
+        self._key = serialization.load_pem_private_key(content, password=passphrase)
 
-    def _fill_subject(self):
+    def _make_subject(self):
         logging.info('Filling subject')
-        subj = self._object.get_subject()
-        subj.CN = self._cn
-        if self._email:
-            subj.emailAddress = self._email
-        if self._country:
-            subj.countryName = self._country
-        if self._state:
-            subj.stateOrProvinceName = self._state
-        if self._locality:
-            subj.localityName = self._locality
-        if self._org:
-            subj.organizationName = self._org
-        if self._ou:
-            subj.organizationalUnitName = self._ou
-        logging.info('Resulting subject: %s', subj.get_components())
+        attr_var_map = [
+            (NameOID.COMMON_NAME, self._cn),
+            (NameOID.COUNTRY_NAME, self._country),
+            (NameOID.STATE_OR_PROVINCE_NAME, self._state),
+            (NameOID.LOCALITY_NAME, self._locality),
+            (NameOID.ORGANIZATION_NAME, self._org),
+            (NameOID.EMAIL_ADDRESS, self._email),
+            (NameOID.ORGANIZATIONAL_UNIT_NAME, self._ou),
+        ]
+        subject = x509.Name(
+            [x509.NameAttribute(x[0], x[1]) for x in attr_var_map if x[1]]
+        )
+        logging.info('Resulting subject: %s', subject.rfc4514_string())
+        return subject
 
-    def _fill_extensions(self):
-        logging.info('Filling extensions')
-        x509_extensions = self._x509_extensions
-
+    def _make_alt_names(self):
+        logging.info('Building alt names')
+        alt_names = []
         if self._alt:
-            sans = []
-            for i in self._alt:
-                logging.info('Adding SAN %s', i)
-                sans.append("DNS: %s" % i)
-            sans_str = ", ".join(sans)
-            sans_bytes = bytes(sans_str, 'utf8')
-            x509_extensions.append(crypto.X509Extension(b"subjectAltName", False, sans_bytes))
-
-        if x509_extensions:
-            self._object.add_extensions(x509_extensions)
+            for a in self._alt:
+                alt_names.append(x509.DNSName(a))
+        return alt_names
 
     @abstractmethod
     def generate(self):
-        """
-        Must fill self._object first
-        :return:
-        """
+        raise NotImplementedError
 
-        self._fill_subject()
-        self._fill_extensions()
-        self._apply_key()
+    def get_key_content(self):
+        return self._key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
 
     def dump_key(self, file):
         logging.info('Writing out private key')
-        content = crypto.dump_privatekey(crypto.FILETYPE_PEM, self._key)
+        content = self.get_key_content()
         file.write(content)
+
+    @abstractmethod
+    def get_object_content(self):
+        raise NotImplementedError
 
     def dump_object(self, file):
         logging.info('Writing out object')
-        if isinstance(self._object, crypto.X509Req):
-            content = crypto.dump_certificate_request(crypto.FILETYPE_PEM, self._object)
-        else:
-            content = crypto.dump_certificate(crypto.FILETYPE_PEM, self._object)
+        content = self.get_object_content()
         file.write(content)
 
 
 class RequestGenerator(X509Creator):
+    def __init__(self, *args, **kwargs):
+        self._csr = None  # type: CertificateSigningRequest
+        super(RequestGenerator, self).__init__(*args, **kwargs)
+
     def generate(self):
-        self._object = crypto.X509Req()
-        super(RequestGenerator, self).generate()
+        self._csr = x509.CertificateSigningRequestBuilder().subject_name(
+            self._make_subject()
+        ).add_extension(
+            x509.SubjectAlternativeName(self._make_alt_names()),
+            critical=False
+        ).sign(self._key, hashes.SHA256())
+
+    def get_object_content(self):
+        return self._csr.public_bytes(serialization.Encoding.PEM)
 
 
 class CertificateGenerator(X509Creator):
+    # def __init__(self, *args, **kwargs):
+    #     super(CertificateGenerator, self).__init__(*args, **kwargs)
+    #     self._x509_extensions = ([
+    #         crypto.X509Extension(b"keyUsage", False, b"Digital Signature,Non Repudiation,Key Encipherment"),
+    #         crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
+    #     ])
+
     def __init__(self, *args, **kwargs):
+        self._cert = None  # type: Certificate
         super(CertificateGenerator, self).__init__(*args, **kwargs)
-        self._x509_extensions = ([
-            crypto.X509Extension(b"keyUsage", False, b"Digital Signature,Non Repudiation,Key Encipherment"),
-            crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
-        ])
 
     def generate(self):
-        self._object = crypto.X509()
-        super(CertificateGenerator, self).generate()
-        self._object.set_serial_number(1000)
-        self._object.gmtime_adj_notBefore(0)
-        self._object.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
-        self._object.set_issuer(self._object.get_subject())
+        if self._key is None:
+            self._generate_key()
+        subject = issuer = self._make_subject()
+        self._cert = x509.CertificateBuilder().subject_name(
+            subject
+        ).issuer_name(
+            issuer
+        ).public_key(
+            self._key.public_key()
+        ).serial_number(
+            x509.random_serial_number()
+        ).not_valid_before(
+            datetime.datetime.utcnow()
+        ).not_valid_after(
+            datetime.datetime.utcnow() + datetime.timedelta(days=10 * 365)
+        ).add_extension(
+            x509.SubjectAlternativeName(self._make_alt_names()),
+            critical=False
+        ).sign(self._key, hashes.SHA256())
+
+    def get_object_content(self):
+        return self._cert.public_bytes(serialization.Encoding.PEM)
 
 
 @click.command()
