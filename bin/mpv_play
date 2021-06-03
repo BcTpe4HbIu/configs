@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+exec mpv --alang=eng --ovc=nvenc --stream-buffer-size=128MiB --cache-pause-wait=10 $*
