@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+systemd-inhibit --what 'shutdown:sleep' --mode block $*
