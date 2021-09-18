@@ -1,0 +1,33 @@
+#!/bin/zsh
+
+typeset -A sessions
+
+sessions=(
+    'sshuttle' '~'
+)
+
+session=$1
+
+if [ -z "$session" ] ; then
+    echo usage $0 SESSION_NAME
+    return
+fi
+
+if tmux has-session -t $session ; then
+    [ -z "$TMUX" ] && tmux attach-session -t $session
+    [ ! -z "$TMUX" ] && tmux switch-client -t $session
+    return
+fi
+
+session_path=$sessions[$session]
+if [ -z "$session_path" ] ;  then
+    if [ -d "~/git/$session" ] ; then
+        session_path="~/git/$session"
+    else
+        session_path="~"
+    fi
+fi
+
+tmux new-session -s "$session" -c "$session_path" -d
+[ -z "$TMUX" ] && tmux attach-session -t $session
+[ ! -z "$TMUX" ] && tmux switch-client -t $session

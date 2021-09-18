@@ -6,4 +6,5 @@ if [ "x$params" = "x" ] ; then
   echo not found params in workpass/$*
   return
 fi
+
 sshuttle ${=params}
