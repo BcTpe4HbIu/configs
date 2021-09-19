@@ -21,10 +21,10 @@ fi
 
 session_path=$sessions[$session]
 if [ -z "$session_path" ] ;  then
-    if [ -d "~/git/$session" ] ; then
-        session_path="~/git/$session"
+    if [ -d "$HOME/git/$session" ] ; then
+        session_path="$HOME/git/$session"
     else
-        session_path="~"
+        session_path="$HOME"
     fi
 fi
 
