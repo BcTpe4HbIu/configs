@@ -1,8 +1,7 @@
 #!/usr/bin/zsh
-set -e 
+set -e
 
-urls=$@
 
-for url in $urls; do
+for url in "$@"; do
     retry nosleep youtube-dl $url
 done
