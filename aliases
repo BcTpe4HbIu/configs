@@ -17,5 +17,3 @@ alias kctx=kubectx
 alias kns=kubens
 alias k=kubectl
 alias gpmws='git push -o merge_request.create -o merge_request.target=master -o merge_request.merge_when_pipeline_succeeds'
-alias atom=code
-alias c='code .'
