@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+git remote -v | grep origin | grep fetch | awk '{print $2}' | sed 's#^git@\(.*\)\:\(.*\)\.git$#https://\1/\2#g'
