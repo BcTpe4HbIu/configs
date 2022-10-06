@@ -34,6 +34,7 @@ def main():
         subprocess.check_call(["gsettings", "set", "org.gnome.desktop.screensaver", "picture-uri", uri])
     else:
         subprocess.check_call(["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri])
+        subprocess.check_call(["gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", uri])
 
 
 if __name__ == "__main__":
