@@ -3,9 +3,6 @@ HISTSIZE=50000
 SAVEHIST=100000
 bindkey -e
 
-typeset -U fpath
-fpath=( ~/.dotfiles/zfunc ~/.dotfiles/compdefs $fpath )
-
 autoload -U colors && colors
 
 zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate
@@ -53,7 +50,6 @@ fi
 bindkey ';5D' emacs-backward-word
 bindkey ';5C' emacs-forward-word
 
-export EDITOR='vim'
 
 if [ "$TERM"=="xterm" ] ; then
     export TERM=xterm-256color
@@ -66,7 +62,6 @@ setopt HIST_SAVE_NO_DUPS
 setopt SHARE_HISTORY
 setopt INC_APPEND_HISTORY
 
-autoload -Uz ~/.dotfiles/zfunc/*
 
 if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   export ZSH=$HOME/.dotfiles/oh-my-zsh
@@ -91,12 +86,3 @@ compdef _pass pass
 compdef _pass workpass
 zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
 
-which go 2>&1 >/dev/null
-if [ $? -eq 0 ] ; then
-    [ -d ~/go ] || mkdir ~/go ;
-    export GOPATH=~/go ;
-fi
-
-test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
-test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
-test -f $HOME/.dotfiles/local.zsh && source $HOME/.dotfiles/local.zsh
