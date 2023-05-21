@@ -1,0 +1,14 @@
+#!/bin/zsh
+
+sopsed=$1
+namespace=$2
+
+if [ -z $sopsed -o -z $namespace ] ; then
+    echo Usage: kubesealsops SECRET NAMESPACE
+    return 1
+fi
+
+secret=${sopsed%%.sops.*}.yaml
+
+sops -d $sopsed | kubeseal -n $namespace -o yaml > $secret
+echo wrote $secret
