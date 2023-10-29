@@ -1,3 +1,4 @@
+zmodload zsh/zprof
 HISTFILE=~/.histfile
 HISTSIZE=50000
 SAVEHIST=100000
