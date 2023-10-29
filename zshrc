@@ -69,13 +69,14 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   export ZSH_CUSTOM=$HOME/.dotfiles/oh-my-zsh-extra
   export DISABLE_UPDATE_PROMPT=true
   export DISABLE_AUTO_UPDATE=true
-  #ZSH_THEME="robbyrussell"
-  #ZSH_THEME="bira"
+
   ZSH_THEME="powerlevel10k/powerlevel10k"
-  plugins=(web-search git archlinux docker npm yarn pip tmux \
-          zsh-autosuggestions fzf helm terraform aws heroku \
-          transfer httpie docker docker-compose \
-          direnv httpie\
+  plugins=(web-search git archlinux tmux extract \
+          npm yarn pip \
+          zsh-autosuggestions fzf \
+          helm terraform \
+          podman docker docker-compose \
+          direnv httpie \
           )
   ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
   source $ZSH/oh-my-zsh.sh
