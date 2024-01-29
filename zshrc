@@ -87,4 +87,3 @@ fi
 compdef _pass pass
 compdef _pass workpass
 zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
-

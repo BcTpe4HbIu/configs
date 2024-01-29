@@ -1,4 +1,2 @@
 typeset -U path
-path=($path[@] ~/go/bin ~/bin ~/.dotfiles/bin)
-
-
+path=($path[@] ~/go/bin ~/bin ~/.dotfiles/bin ~/.local/bin)
