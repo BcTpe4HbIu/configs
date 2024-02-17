@@ -1,8 +1,14 @@
 zmodload zsh/zprof
 HISTFILE=~/.histfile
 HISTSIZE=50000
-SAVEHIST=100000
+SAVEHIST=$HISTSIZE
 bindkey -e
+
+typeset -U fpath
+fpath=( ~/.dotfiles/zfunc ~/.dotfiles/compdefs $fpath )
+autoload -Uz ~/.dotfiles/zfunc/*
+
+autoload -Uz compinit && compinit
 
 autoload -U colors && colors
 
@@ -73,7 +79,8 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   ZSH_THEME="powerlevel10k/powerlevel10k"
   plugins=(web-search git archlinux tmux extract \
           npm yarn pip \
-          zsh-autosuggestions fzf \
+          zsh-autosuggestions \
+          fzf \
           helm terraform \
           podman docker docker-compose \
           direnv httpie \
@@ -90,3 +97,17 @@ zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
 if [ ! -z "$(which zoxide 2>/dev/null)" ] ; then
   eval "$(zoxide init --cmd cd zsh)"
 fi
+
+
+which go 2>&1 >/dev/null
+if [ $? -eq 0 ] ; then
+    [ -d ~/go ] || mkdir ~/go ;
+    export GOPATH=~/go ;
+fi
+
+export EDITOR='vim'
+
+
+test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
+test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
+test -f $HOME/.dotfiles/local.zsh && source $HOME/.dotfiles/local.zsh
