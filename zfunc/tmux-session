@@ -7,6 +7,7 @@ sessions=(
 )
 
 session=$1
+session_path=$2
 
 if [ -z "$session" ] ; then
     echo usage $0 SESSION_NAME
@@ -19,12 +20,15 @@ if tmux has-session -t $session ; then
     return
 fi
 
-session_path=$sessions[$session]
+
 if [ -z "$session_path" ] ;  then
-    if [ -d "$HOME/git/$session" ] ; then
-        session_path="$HOME/git/$session"
-    else
-        session_path="$HOME"
+    session_path=$sessions[$session]
+    if [ -z "$session_path" ] ;  then
+        if [ -d "$HOME/git/$session" ] ; then
+            session_path="$HOME/git/$session"
+        else
+            session_path="$HOME"
+        fi
     fi
 fi
 
