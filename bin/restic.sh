@@ -49,11 +49,6 @@ function forget {
 }
 
 
-function prune {
-    log pruning unused data from repository
-    $RESTIC prune
-}
-
 if [[ "$1" = "--help" ]] ; then
     log Usage:
     log     $0
@@ -66,9 +61,6 @@ fi
 case "$1" in
     "backup" )
         backup
-    ;;
-    "prune" )
-        prune
     ;;
     "clean" )
         forget
