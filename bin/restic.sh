@@ -3,6 +3,7 @@
 set -e
 
 RESTIC=restic
+[ -d /opt/archive/restic_cache ] && export RESTIC_CACHE_DIR=/opt/archive/restic_cache
 export RESTIC_REPOSITORY=${RESTIC_REPOSITORY:-/run/media/bctpe4hbiu/backups/archpc}
 
 export RESTIC_KEEP_LATEST=7
