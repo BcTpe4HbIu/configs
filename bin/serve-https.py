@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/env python3
 import logging
 import ssl
 from http.server import HTTPServer, SimpleHTTPRequestHandler
