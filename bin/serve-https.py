@@ -25,7 +25,7 @@ except:
     raise
 
 try:
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.verify_mode = ssl.CERT_NONE
     context.load_cert_chain(cert_file.name, key_file.name)
 finally:
