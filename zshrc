@@ -94,7 +94,7 @@ fi
 compdef _pass pass
 compdef _pass workpass
 zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
-if [ ! -z "$(which zoxide 2>/dev/null)" ] ; then
+if which zoxide >/dev/null 2>&1 ; then
   eval "$(zoxide init zsh)"
 fi
 
