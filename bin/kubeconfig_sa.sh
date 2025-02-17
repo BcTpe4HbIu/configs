@@ -1,20 +1,20 @@
 #!/bin/bash
 
-set -euxo pipefail
+set -euo pipefail
 
 
 TEMPDIR=$( mktemp -d )
 
 trap "{ rm -rf $TEMPDIR ; exit 255; }" EXIT
 
-NAMESPACE=$1
-SECRET=$2
-OUTPUT=$3
-
-if [ -z "$NAMESPACE" -o -z "$SECRET" -o -z "$OUTPUT" ] ; then
+if [ "$#" -ne 3 ] ; then
     echo usage $0 namespace secret output
     exit 1
 fi
+
+NAMESPACE=$1
+SECRET=$2
+OUTPUT=$3
 
 # Pull the bearer token and cluster CA from the service account secret.
 BEARER_TOKEN=$( kubectl get secrets -n $NAMESPACE $SECRET -o jsonpath='{.data.token}' | base64 -d )
