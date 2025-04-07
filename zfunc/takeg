@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+[ -z $1 ] && (echo usage: $0 git@blabla ; return 1)
+
+target_dir=$(echo -n "$1" | sed 's#^git@\(.*\)\:\(.*\)\.git$#\2#g')
+target_dir=${target_dir#/}
+
+echo Cloning into $target_dir...
+takedir $target_dir
+git clone "$1" .
