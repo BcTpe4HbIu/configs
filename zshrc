@@ -91,9 +91,29 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   source $HOME/.dotfiles/p10k.zsh
 fi
 
-compdef _pass pass
 compdef _pass workpass
 zstyle ':completion::complete:workpass::' prefix "$HOME/.workpass"
+
+_fzf_complete_pass() {
+  _fzf_complete +m -- "$@" < <(
+    local prefix
+    prefix="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
+    command find -L "$prefix" \
+      -name "*.gpg" -type f | \
+      sed -e "s#${prefix}/\{0,1\}##" -e 's#\.gpg##' -e 's#\\#\\\\#' | sort
+  )
+}
+
+_fzf_complete_workpass() {
+  _fzf_complete +m -- "$@" < <(
+    local prefix
+    prefix="${PASSWORD_STORE_DIR:-$HOME/.workpass}"
+    command find -L "$prefix" \
+      -name "*.gpg" -type f | \
+      sed -e "s#${prefix}/\{0,1\}##" -e 's#\.gpg##' -e 's#\\#\\\\#' | sort
+  )
+}
+
 if which zoxide >/dev/null 2>&1 ; then
   eval "$(zoxide init zsh)"
 fi
