@@ -66,6 +66,7 @@ setopt HIST_FIND_NO_DUPS
 setopt HIST_IGNORE_DUPS
 setopt HIST_IGNORE_SPACE
 setopt HIST_SAVE_NO_DUPS
+setopt HIST_EXPIRE_DUPS_FIRST
 setopt SHARE_HISTORY
 setopt INC_APPEND_HISTORY
 
@@ -75,8 +76,9 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   export ZSH_CUSTOM=$HOME/.dotfiles/oh-my-zsh-extra
   export DISABLE_UPDATE_PROMPT=true
   export DISABLE_AUTO_UPDATE=true
+  export ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
-  ZSH_THEME="powerlevel10k/powerlevel10k"
+  export ZSH_THEME="powerlevel10k/powerlevel10k"
   plugins=(web-search git archlinux tmux extract \
           npm yarn pip \
           zsh-autosuggestions \
@@ -85,7 +87,7 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
           podman docker docker-compose \
           direnv httpie \
           )
-  ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+  export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
   source $ZSH/oh-my-zsh.sh
   bindkey '`' autosuggest-accept
   source $HOME/.dotfiles/p10k.zsh
