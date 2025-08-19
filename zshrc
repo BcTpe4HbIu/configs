@@ -79,13 +79,11 @@ if [ -d $HOME/.dotfiles/oh-my-zsh ]; then
   export ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
   export ZSH_THEME="powerlevel10k/powerlevel10k"
-  plugins=(web-search git archlinux tmux extract \
-          npm yarn pip \
-          zsh-autosuggestions \
+  plugins=(zsh-autosuggestions generate-completions \
+          web-search aliases extract \
+          git yarn \
           fzf \
-          helm terraform \
-          podman docker docker-compose \
-          direnv httpie \
+          direnv httpie tmux \
           )
   export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
   source $ZSH/oh-my-zsh.sh
@@ -133,3 +131,8 @@ export EDITOR='vim'
 test -f $HOME/.dotfiles/aliases && source $HOME/.dotfiles/aliases
 test -f $HOME/.dotfiles/path.zsh && source $HOME/.dotfiles/path.zsh
 test -f $HOME/.dotfiles/local.zsh && source $HOME/.dotfiles/local.zsh
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/bin/vault vault
+
+complete -o nospace -C /usr/bin/terraform terraform
