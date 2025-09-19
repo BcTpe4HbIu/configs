@@ -14,9 +14,9 @@ if [ -z "$session" ] ; then
     return
 fi
 
-if tmux has-session -t $session ; then
-    [ -z "$TMUX" ] && tmux attach-session -t $session
-    [ ! -z "$TMUX" ] && tmux switch-client -t $session
+if tmux has-session -t "=$session" ; then
+    [ -z "$TMUX" ] && tmux attach-session -t "=$session"
+    [ ! -z "$TMUX" ] && tmux switch-client -t "=$session"
     return
 fi
 
