@@ -1,0 +1,112 @@
+#!/bin/zsh
+if (( $# != 1 )); then
+    print -u2 "Usage: check-k8s-tls-match <tls-secret.yaml | ->"
+    return 1
+fi
+
+local manifest_arg="$1"
+local manifest_content
+
+if [[ "$manifest_arg" == "-" ]]; then
+    manifest_content=$(cat) || {
+        print -u2 "Failed to read manifest from stdin"
+        return 1
+    }
+else
+    manifest_content=$(cat "$manifest_arg" 2>/dev/null) || {
+        print -u2 "Cannot read manifest: $manifest_arg"
+        return 1
+    }
+fi
+
+local tool
+for tool in yq openssl base64; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        print -u2 "Missing dependency: $tool"
+        return 127
+    fi
+done
+
+local base64_decode_flag
+if base64 --help 2>&1 | grep -q -- '--decode'; then
+    base64_decode_flag='--decode'
+else
+    base64_decode_flag='-d'
+fi
+
+local tls_crt_string tls_key_string tls_crt_data tls_key_data
+tls_crt_string=$(print -r -- "$manifest_content" | yq -r '.stringData["tls.crt"] // ""' -) || {
+    print -u2 "Unable to read stringData.tls.crt from manifest"
+    return 1
+}
+tls_key_string=$(print -r -- "$manifest_content" | yq -r '.stringData["tls.key"] // ""' -) || {
+    print -u2 "Unable to read stringData.tls.key from manifest"
+    return 1
+}
+tls_crt_data=$(print -r -- "$manifest_content" | yq -r '.data["tls.crt"] // ""' -) || {
+    print -u2 "Unable to read data.tls.crt from manifest"
+    return 1
+}
+tls_key_data=$(print -r -- "$manifest_content" | yq -r '.data["tls.key"] // ""' -) || {
+    print -u2 "Unable to read data.tls.key from manifest"
+    return 1
+}
+
+local crt_pem key_pem
+if [[ -n "$tls_crt_string" ]]; then
+    crt_pem="$tls_crt_string"
+elif [[ -n "$tls_crt_data" ]]; then
+    crt_pem=$(printf '%s' "$tls_crt_data" | base64 "$base64_decode_flag") || {
+        print -u2 "Failed to decode data.tls.crt"
+        return 1
+    }
+else
+    print -u2 "Manifest is missing tls.crt in both data and stringData"
+    return 1
+fi
+
+if [[ -n "$tls_key_string" ]]; then
+    key_pem="$tls_key_string"
+elif [[ -n "$tls_key_data" ]]; then
+    key_pem=$(printf '%s' "$tls_key_data" | base64 "$base64_decode_flag") || {
+        print -u2 "Failed to decode data.tls.key"
+        return 1
+    }
+else
+    print -u2 "Manifest is missing tls.key in both data and stringData"
+    return 1
+fi
+
+local cert_modulus key_modulus
+cert_modulus=$(printf '%s' "$crt_pem" | openssl x509 -noout -modulus -in /dev/stdin 2>/dev/null) || {
+    print -u2 "Unable to extract modulus from tls.crt"
+    return 1
+}
+key_modulus=$(printf '%s' "$key_pem" | openssl rsa -noout -modulus -in /dev/stdin 2>/dev/null) || {
+    print -u2 "Unable to extract modulus from tls.key"
+    return 1
+}
+
+local cert_md5_output key_md5_output cert_md5 key_md5
+cert_md5_output=$(printf '%s\n' "$cert_modulus" | openssl md5) || {
+    print -u2 "Unable to hash certificate modulus"
+    return 1
+}
+key_md5_output=$(printf '%s\n' "$key_modulus" | openssl md5) || {
+    print -u2 "Unable to hash key modulus"
+    return 1
+}
+
+cert_md5=${cert_md5_output##* }
+key_md5=${key_md5_output##* }
+
+print "Cert md5: $cert_md5"
+print "Key  md5: $key_md5"
+
+if [[ "$cert_md5" != "$key_md5" ]]; then
+    print "Cert not matching with key!"
+    return 2
+fi
+
+print "Matched!"
+return 0
