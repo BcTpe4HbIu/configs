@@ -11,6 +11,7 @@ typeset -A COMP_COMMANDS=(
     npm  "npm completion"
     pip  "pip completion --zsh"
     pipx  "register-python-argcomplete pipx"
+    wsm  "wsm completion zsh"
 )
 
 # Generate completion if missing
