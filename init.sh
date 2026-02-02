@@ -33,5 +33,11 @@ ln -sf "$(pwd)/zshenv" ~/.zshenv
 ln -sf "$(pwd)/zprofile" ~/.zprofile
 mkdir -p ~/.config/fontconfig
 ln -sf "$(pwd)/fonts.conf" ~/.config/fontconfig/fonts.conf
+mkdir -p ~/.config/opencode
+if [ -e ~/.config/opencode/agents ] ; then
+    echo ~/.config/opencode/agents exists, cant create link
+else
+    ln -sf "$(pwd)/agents/" ~/.config/opencode/agents
+fi
 
 which fzf >/dev/null 2>&1 || echo Install fzf!
