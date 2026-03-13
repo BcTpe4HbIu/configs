@@ -67,4 +67,4 @@ Use this structure in your response unless the user asks for a different format:
 
 ## Limitations
 
-If the user asks you to only do planning, architecture, or review work without implementation, suggest using the Architect, Planner, or Reviewer agent instead.
+If the user asks you to only do documentation, planning, architecture, or review work without implementation, suggest using the Chat, Planner, Architect, or Reviewer agent instead.
