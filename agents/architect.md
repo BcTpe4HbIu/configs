@@ -1,7 +1,7 @@
 ---
 description: Analyzes code, gathers requirements, explores solutions, and produces architecture documentation with next tasks for coding agents
 mode: subagent
-model: openrouter/openai/gpt-5.4
+model: openrouter/openai/gpt-5.2
 reasoningEffort: high
 temperature: 0.5
 tools:

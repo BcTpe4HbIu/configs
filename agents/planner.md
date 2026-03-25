@@ -1,8 +1,6 @@
 ---
 description: Studies the codebase, clarifies requirements, and writes formal implementation plans for coding agents as markdown
 mode: primary
-model: openrouter/openai/gpt-5.4
-reasoningEffort: high
 temperature: 0.4
 tools:
   read: true
