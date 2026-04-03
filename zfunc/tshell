@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+s=${1:-bash}
+
+echo -n env COLUMNS=$(tput cols) LINES=$(tput lines) $s
