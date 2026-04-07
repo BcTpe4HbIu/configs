@@ -1,7 +1,7 @@
 ---
 description: Implements scoped code changes and runs linters; delegates docs and tests to other agents
 mode: subagent
-model: openrouter/openai/gpt-5.2-codex
+model: zai-coding-plan/glm-5
 temperature: 0.1
 tools:
   read: true

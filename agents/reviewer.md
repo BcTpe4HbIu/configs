@@ -1,7 +1,7 @@
 ---
 description: Reviews code, runs project lint/tests, and reports issues by severity for fixes
 mode: subagent
-model: openrouter/openai/gpt-5.2
+model: openrouter/openai/gpt-5.4
 reasoningEffort: high
 temperature: 0.2
 tools:
