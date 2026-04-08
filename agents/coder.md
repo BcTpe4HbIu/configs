@@ -1,7 +1,7 @@
 ---
 description: Implements scoped code changes and runs linters; delegates docs and tests to other agents
 mode: subagent
-model: zai-coding-plan/glm-5
+model: zai-coding-plan/glm-4.7
 temperature: 0.1
 tools:
   read: true
