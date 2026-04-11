@@ -1,5 +1,18 @@
 #!/bin/bash
 
+
+link_or_warn_dir() {
+    src="$1"
+    dst="$2"
+
+    if [ -d "$dst" ] && [ ! -L "$dst" ]; then
+        echo "Warning: $dst is a directory, skipping symlink to $src"
+        return
+    fi
+
+    ln -sfT "$src" "$dst"
+}
+
 set -e
 
 script_dir="$(dirname $(realpath "$0"))"
@@ -33,11 +46,10 @@ ln -sf "$(pwd)/zshenv" ~/.zshenv
 ln -sf "$(pwd)/zprofile" ~/.zprofile
 mkdir -p ~/.config/fontconfig
 ln -sf "$(pwd)/fonts.conf" ~/.config/fontconfig/fonts.conf
+
 mkdir -p ~/.config/opencode
-if [ -e ~/.config/opencode/agents ] ; then
-    echo ~/.config/opencode/agents exists, cant create link
-else
-    ln -sf "$(pwd)/agents/" ~/.config/opencode/agents
-fi
+
+link_or_warn_dir "$(pwd)/ai/agents" ~/.config/opencode/agents
+link_or_warn_dir "$(pwd)/ai/skills" ~/.config/opencode/skills
 
 which fzf >/dev/null 2>&1 || echo Install fzf!
