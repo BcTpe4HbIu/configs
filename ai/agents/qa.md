@@ -1,7 +1,7 @@
 ---
 description: Turns architectural specs and requirements into tests; updates test suites without implementing product code
 mode: subagent
-model: zai-coding-plan/glm-4.7
+model: zai-coding-plan/glm-5-turbo
 temperature: 0.2
 tools:
   read: true
