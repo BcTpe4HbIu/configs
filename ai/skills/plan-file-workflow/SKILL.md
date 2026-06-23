@@ -14,7 +14,7 @@ This workflow separates planning from execution.
 
 - A plan file is a markdown document written by an `architect` or planner-style agent.
 - The plan file is the source of truth for execution scope.
-- Plan content is mutable only while plan status is `draft`.
+- Plan content is mutable only while plan status is `draft`, except for the dedicated status section described below.
 - Execution is allowed only while plan status is `in progress`.
 - Completion is recorded by a `reviewer` agent setting status to `done`.
 
@@ -46,7 +46,7 @@ Field rules:
 
 1. Never create, edit, or execute against a plan file without reading its current contents first.
 2. Never change plan body content unless `status` is exactly `draft`.
-3. Never change plan body content when `status` is `in progress` or `done`.
+3. While `status` is `in progress`, the only editable plan content is the dedicated `# Status` section.
 4. Never execute a plan unless `status` is exactly `in progress`.
 5. Never mark a plan `done` yourself during implementation. A `reviewer` agent must set that state after changes are complete.
 6. Always update `updated_at` whenever the plan file itself is legitimately modified.
@@ -91,6 +91,11 @@ Short statement of desired outcome.
 
 Relevant findings, assumptions, and constraints.
 
+# Status
+
+- Current phase: planning
+- Progress notes: Not started
+
 # Steps
 
 1. Concrete implementation step.
@@ -101,6 +106,12 @@ Relevant findings, assumptions, and constraints.
 
 Known risks, edge cases, or open questions.
 ```
+
+`# Status` is a dedicated execution-progress section.
+
+- In `draft`, it may be written or refined like the rest of the plan.
+- In `in progress`, it is the only section whose body content may be edited.
+- In `done`, it becomes read-only like the rest of the file.
 
 After the draft plan is complete:
 
@@ -121,7 +132,8 @@ Before making code changes:
 Execution rules:
 
 - Follow the plan as written.
-- Do not edit plan body content during execution.
+- Do not edit plan body content during execution except inside `# Status`.
+- Use `# Status` for progress updates, implementation notes, and execution state tracking.
 - If the plan is wrong, stale, or incomplete, stop execution.
 - Request that the user move the plan back to `draft` before any plan changes are made.
 
@@ -158,6 +170,14 @@ When modifying an existing draft plan:
 - Confirm status is still `draft`.
 - Update `updated_at`.
 
+When updating execution progress:
+
+- Re-read the file immediately before editing.
+- Confirm status is `in progress`.
+- Modify only the `# Status` section.
+- Leave all other plan sections unchanged.
+- Update `updated_at`.
+
 When asked to execute work from a plan:
 
 - Refuse execution unless status is `in progress`.
@@ -165,15 +185,15 @@ When asked to execute work from a plan:
 
 When a plan is in `in progress` or `done`:
 
-- Refuse any request to modify plan content.
-- Instruct the user to move the plan back to `draft` if content must change.
+- Refuse any request to modify plan content outside `# Status`.
+- Instruct the user to move the plan back to `draft` if any non-status content must change.
 
 ## Decision Rules
 
 - If there is no plan file yet and enough context exists: create a draft plan.
 - If there is no plan file yet and context is insufficient: gather more information first.
-- If a draft plan exists: editing is allowed, execution is not.
-- If an in-progress plan exists: execution is allowed, editing is not.
+- If a draft plan exists: full plan editing is allowed, execution is not.
+- If an in-progress plan exists: execution is allowed, but only the `# Status` section may be edited.
 - If a done plan exists: neither editing nor execution is allowed.
 
 ## Example User-Facing Messages
@@ -188,7 +208,7 @@ Execution blocked:
 
 Edit blocked:
 
-> I cannot change this plan because its status is `in progress`. Plan content can only be changed in `draft`.
+> I cannot change this part of the plan because its status is `in progress`. Only the `# Status` section may be updated during execution.
 
 Review handoff:
 
