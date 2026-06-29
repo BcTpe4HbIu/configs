@@ -1,3 +1,18 @@
 #!/bin/zsh
 
-git remote -v | grep origin | grep fetch | awk '{print $2}' | sed 's#^git@\(.*\)\:\(.*\)\.git$#https://\1/\2#g'
+remote_url=$(git remote get-url origin 2>/dev/null) || return 1
+
+case "$remote_url" in
+  git@*:* )
+    site_url="https://${remote_url#git@}"
+    site_url="${site_url/:/\/}"
+    ;;
+  http://* | https://* )
+    site_url="$remote_url"
+    ;;
+  * )
+    site_url="$remote_url"
+    ;;
+esac
+
+print -r -- "${site_url%.git}"
