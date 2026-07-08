@@ -4,7 +4,7 @@ mkdir -p "$COMP_DIR"
 
 # Command definitions (name → generation command)
 typeset -A COMP_COMMANDS=(
-    rclone   "rclone completion zsh -"
+    rclone   "rclone completion zsh"
     helm     "helm completion zsh"
     kubectl  "kubectl completion zsh"
     podman  "podman completion zsh"
