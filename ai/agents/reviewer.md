@@ -13,6 +13,7 @@ tools:
   edit: false
   bash: true
   task: false
+  playwright_*: true
 permission:
   write: deny
   edit: deny
