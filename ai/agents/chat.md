@@ -11,12 +11,12 @@ tools:
   webfetch: true
   write: true
   edit: true
-  bash: false
+  bash: true
   task: false
 permission:
   write: allow
   edit: allow
-  bash: deny
+  bash: allow
 color: "#0f766e"
 ---
 
