@@ -1,7 +1,7 @@
 ---
 description: Discusses docs and plans, researches context, and writes markdown files without modifying code
 mode: primary
-model: openrouter/openai/gpt-5.4
+model: openrouter/openai/gpt-5.6-terra
 reasoningEffort: high
 temperature: 0.5
 tools:

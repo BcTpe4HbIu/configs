@@ -1,7 +1,7 @@
 ---
 description: Completion auditor that verifies the full user request was actually finished and produces the next-loop plan when it was not
 mode: subagent
-model: openrouter/openai/gpt-5.4
+model: openrouter/openai/gpt-5.6-terra
 temperature: 0.2
 tools:
   read: true

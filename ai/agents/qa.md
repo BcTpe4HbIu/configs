@@ -1,7 +1,7 @@
 ---
 description: Turns architectural specs and requirements into tests; updates test suites without implementing product code
 mode: subagent
-model: zai-coding-plan/glm-5-turbo
+model: openrouter/openai/gpt-5.6-luna
 temperature: 0.2
 tools:
   read: true
