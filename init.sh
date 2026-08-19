@@ -52,4 +52,14 @@ mkdir -p ~/.config/opencode
 link_or_warn_dir "$(pwd)/ai/agents" ~/.config/opencode/agents
 link_or_warn_dir "$(pwd)/ai/skills" ~/.config/opencode/skills
 
+for f in opencode.json opencode-mem.jsonc ; do
+    if [ -f ~/work/opencode/$f ] ; then
+        if [ -f ~/.config/opencode/$f -a ! -L ~/.config/opencode/$f ] ; then
+            echo "OpenCode config ($f) exists. Remove to replace with shared one."
+        else
+            ln -sf ~/work/opencode/$f ~/.config/opencode/$f
+        fi
+    fi
+done
+
 which fzf >/dev/null 2>&1 || echo Install fzf!
