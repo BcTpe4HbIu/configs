@@ -50,7 +50,9 @@ ln -sf "$(pwd)/fonts.conf" ~/.config/fontconfig/fonts.conf
 mkdir -p ~/.config/opencode
 
 link_or_warn_dir "$(pwd)/ai/agents" ~/.config/opencode/agents
-link_or_warn_dir "$(pwd)/ai/skills" ~/.config/opencode/skills
+link_or_warn_dir "$(pwd)/ai/skills" ~/.agents/skills
+
+[ -L ~/.config/opencode/skills ] && unlink ~/.config/opencode/skills
 
 for f in opencode.json opencode-mem.jsonc ; do
     if [ -f ~/work/opencode/$f ] ; then
