@@ -1,0 +1,366 @@
+#!/bin/bash
+# Аудит пакетов Arch: ожидающие обновления, пакеты вне репозиториев,
+# отставание от AUR, сироты и ссылки на отсутствующие .so.
+# Root не нужен: свежие базы репозиториев синхронизируются во временный
+# каталог через checkupdates, системная база не трогается.
+
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+usage: $(basename "$0") [-n] [-v] [-q] [-t] [section...]
+
+sections (по умолчанию все):
+  updates   обновления из репозиториев и дата последнего pacman -Syu
+  foreign   пакеты, которых нет ни в одном репозитории
+  aur       пакеты вне репозиториев и из \$AUR_REPOS (сейчас: ${AUR_REPOS}),
+            пропавшие из AUR или отставшие от него
+  orphans   сироты: пакеты, не нужные ни одному явно установленному,
+            включая цепочки и циклы
+  broken    пакеты вне репозиториев со ссылками на отсутствующие .so
+            (если установлен checkrebuild — все пакеты через него)
+
+options:
+  -n  не синхронизировать временную базу (checkupdates --nosync)
+  -v  подробно: полный список обновлений, пакеты AUR без проблем
+  -q  только имена пакетов, для одной секции foreign или orphans:
+        sudo pacman -Rn \$(pkg-audit -q orphans)
+  -t  orphans: необязательные зависимости тоже считать ненужными
+      (как pacman -Qdtt; в список попадут grub, xorg-server и т. п. —
+      удалять оттуда вслепую нельзя)
+EOF
+}
+
+AUR_REPOS=${AUR_REPOS:-aur-local}
+SYNC=1
+VERBOSE=0
+QUIET=0
+STRICT=0
+
+while getopts nvqth opt; do
+    case $opt in
+        n) SYNC=0 ;;
+        v) VERBOSE=1 ;;
+        q) QUIET=1 ;;
+        t) STRICT=1 ;;
+        h) usage; exit 0 ;;
+        *) usage >&2; exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+SECTIONS=("$@")
+if [ ${#SECTIONS[@]} -eq 0 ]; then
+    SECTIONS=(updates foreign aur orphans broken)
+fi
+for s in "${SECTIONS[@]}"; do
+    case $s in
+        updates|foreign|aur|orphans|broken) ;;
+        *) echo "unknown section: $s" >&2; usage >&2; exit 1 ;;
+    esac
+done
+if [ $QUIET -eq 1 ] && { [ ${#SECTIONS[@]} -ne 1 ] || [[ ! ${SECTIONS[0]} =~ ^(foreign|orphans)$ ]]; }; then
+    echo "-q works with a single section: foreign or orphans" >&2
+    exit 1
+fi
+
+need() {
+    for c; do
+        if ! command -v "$c" >/dev/null; then
+            echo "missing command: $c" >&2
+            exit 1
+        fi
+    done
+}
+
+header() {
+    if [ $QUIET -eq 1 ]; then
+        return
+    fi
+    if [ -t 1 ]; then
+        printf '\n\033[1m== %s\033[0m\n' "$*"
+    else
+        printf '\n== %s\n' "$*"
+    fi
+}
+
+need pacman checkupdates
+
+TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
+
+# Свежая копия баз репозиториев (local — симлинк на системную базу пакетов).
+export CHECKUPDATES_DB=${CHECKUPDATES_DB:-${TMPDIR:-/tmp}/checkup-db-$UID}
+DB=$CHECKUPDATES_DB
+rc=0
+if [ $SYNC -eq 1 ]; then
+    checkupdates > "$TMP/updates" 2> "$TMP/updates.err" || rc=$?
+else
+    checkupdates --nosync > "$TMP/updates" 2> "$TMP/updates.err" || rc=$?
+fi
+# 0 — есть обновления, 2 — обновлений нет, остальное — ошибка.
+if [ $rc -ne 0 ] && [ $rc -ne 2 ]; then
+    cat "$TMP/updates.err" >&2
+    echo "checkupdates failed (rc=$rc)" >&2
+    exit 1
+fi
+
+# Все установленные пакеты, по строке на пакет:
+# имя, версия, явный (0/1), Required By, Optional For (через запятую),
+# размер в байтах, подписан Arch (0/1 — иначе собран локально).
+LC_ALL=C pacman -Qi | awk '
+    BEGIN {
+        OFS = "\t"
+        mult["B"] = 1; mult["KiB"] = 1024; mult["MiB"] = 1024 ^ 2
+        mult["GiB"] = 1024 ^ 3; mult["TiB"] = 1024 ^ 4
+    }
+    function list(s) {
+        if (s == "None") return ""
+        gsub(/^ +| +$/, "", s); gsub(/ +/, ",", s)
+        return s
+    }
+    function flush() {
+        if (name != "") print name, ver, expl, list(req), list(opt), size, sig
+        name = ""
+    }
+    /^$/ { key = ""; next }
+    /^ / {
+        val = $0; sub(/^ +/, " ", val)
+        if (key == "Required By") req = req val
+        else if (key == "Optional For") opt = opt val
+        next
+    }
+    { key = $0; sub(/ *:.*/, "", key); val = $0; sub(/^[^:]*: /, "", val) }
+    key == "Name"           { flush(); name = val; ver = req = opt = ""; expl = sig = size = 0 }
+    key == "Version"        { ver = val }
+    key == "Install Reason" { expl = (val ~ /^Explicitly/) }
+    key == "Required By"    { req = val }
+    key == "Optional For"   { opt = val }
+    key == "Installed Size" { split(val, a, " "); size = int(a[1] * mult[a[2]]) }
+    key == "Validated By"   { sig = (val ~ /Signature/) }
+    END { flush() }
+' > "$TMP/pkgs"
+
+# pacman -Qm возвращает 1, если таких пакетов нет.
+{ pacman --dbpath "$DB" -Qmq || true; } | sort > "$TMP/foreign"
+
+# Сироты: пакеты, недостижимые от явно установленных по зависимостям.
+# Необязательные зависимости нужных пакетов считаются нужными, как в
+# pacman -Qdt (с -t — нет, как в pacman -Qdtt). В отличие от pacman -Qdt
+# ловит и цепочки, и циклы.
+awk -F'\t' -v strict=$STRICT '
+    { expl[$1] = $3; req[$1] = (strict || $5 == "") ? $4 : ($4 "," $5) }
+    END {
+        for (p in expl) if (expl[p]) need[p] = 1
+        do {
+            changed = 0
+            for (p in expl) {
+                if (p in need || req[p] == "") continue
+                n = split(req[p], r, ",")
+                for (i = 1; i <= n; i++) if (r[i] in need) { need[p] = 1; changed = 1; break }
+            }
+        } while (changed)
+        for (p in expl) if (!(p in need)) print p
+    }
+' "$TMP/pkgs" | sort > "$TMP/orphans"
+
+section_updates() {
+    header "Обновления из репозиториев"
+    local last n
+    last=$(awk '/starting full system upgrade/ { t = $1 } END { print substr(t, 2, 10) }' /var/log/pacman.log)
+    if [ -n "$last" ]; then
+        echo "последний pacman -Syu: $last ($(( ($(date +%s) - $(date -d "$last" +%s)) / 86400 )) дн. назад)"
+    fi
+    n=$(wc -l < "$TMP/updates")
+    echo "ожидают обновления: $n"
+    if [ "$n" -gt 0 ]; then
+        if [ $VERBOSE -eq 1 ] || [ "$n" -le 30 ]; then
+            sed 's/^/  /' "$TMP/updates"
+        else
+            echo "  полный список: $(basename "$0") -nv updates"
+        fi
+    fi
+}
+
+section_foreign() {
+    if [ $QUIET -eq 1 ]; then
+        cat "$TMP/foreign"
+        return
+    fi
+    header "Пакеты вне репозиториев: $(wc -l < "$TMP/foreign")"
+    if [ ! -s "$TMP/foreign" ]; then
+        echo "нет"
+        return
+    fi
+    {
+        printf 'ПАКЕТ\tВЕРСИЯ\tОТКУДА\tСТАТУС\n'
+        awk -F'\t' -v OFS='\t' '
+            FILENAME == ARGV[1] { orphan[$1] = 1; next }
+            FILENAME == ARGV[2] { foreign[$1] = 1; next }
+            $1 in foreign {
+                origin = $7 ? "выпал из репозиториев" : "собран локально"
+                if ($3) state = "явный"
+                else if ($1 in orphan) state = "сирота"
+                else {
+                    state = "нужен для: " $4
+                    if (length(state) > 60) state = substr(state, 1, 57) "..."
+                }
+                print $1, $2, origin, state
+            }
+        ' "$TMP/orphans" "$TMP/foreign" "$TMP/pkgs" | sort -t $'\t' -k3,3 -k1,1
+    } | column -t -s $'\t'
+    echo
+    echo "«выпал из репозиториев» — был установлен из официального репозитория и больше не обновляется"
+}
+
+section_aur() {
+    need curl jq vercmp
+    header "AUR: пропавшие и отставшие пакеты"
+    local repo name src lver rver ood maint c msg
+    # имя, источник, версия для сравнения: для пакетов из $AUR_REPOS — версия
+    # в репозитории (установленная догонит её через pacman -Syu), иначе пусто.
+    {
+        awk '{ print $0 "\tвне репозиториев\t" }' "$TMP/foreign"
+        for repo in $AUR_REPOS; do
+            { LC_ALL=C pacman --dbpath "$DB" -Sl "$repo" 2>/dev/null || true; } |
+                awk -v r="$repo" '/\[installed/ { print $2 "\t" r "\t" $3 }'
+        done
+    } | sort -u -t $'\t' -k1,1 > "$TMP/aur-names"
+    if [ ! -s "$TMP/aur-names" ]; then
+        echo "нет пакетов из AUR"
+        return
+    fi
+
+    cut -f1 "$TMP/aur-names" | jq -Rr '"arg[]=" + @uri' | paste -sd'&' > "$TMP/aur-query"
+    curl -fsS --max-time 60 --data @"$TMP/aur-query" https://aur.archlinux.org/rpc/v5/info > "$TMP/aur.json"
+    if ! jq -e '.type != "error"' "$TMP/aur.json" >/dev/null; then
+        jq -r '.error' "$TMP/aur.json" >&2
+        return 1
+    fi
+    # Пустые поля заменены на «-»: read с IFS=$'\t' склеивает подряд идущие табы.
+    jq -r '.results[] | [.Name, .Version, (.OutOfDate != null | tostring), (.Maintainer // "-")] | @tsv' \
+        "$TMP/aur.json" > "$TMP/aur.tsv"
+    awk -F'\t' -v OFS='\t' '
+        FILENAME == ARGV[1] { rv[$1] = $2; ood[$1] = $3; m[$1] = $4; next }
+        FILENAME == ARGV[2] { lv[$1] = $2; next }
+        { v = ($3 != "") ? $3 : lv[$1] }
+        $1 in rv { print $1, $2, v, rv[$1], ood[$1], m[$1]; next }
+        { print $1, $2, v, "-", "-", "-" }
+    ' "$TMP/aur.tsv" "$TMP/pkgs" "$TMP/aur-names" > "$TMP/aur-cmp"
+
+    while IFS=$'\t' read -r name src lver rver ood maint; do
+        msg=""
+        if [ "$rver" = - ]; then
+            msg="нет в AUR; "
+        else
+            c=$(vercmp "$lver" "$rver")
+            if [ "$c" -lt 0 ]; then
+                msg+="в AUR новее: $rver; "
+            elif [ "$c" -gt 0 ] && [ $VERBOSE -eq 1 ]; then
+                msg+="установлен новее AUR ($rver); "
+            fi
+            if [ "$ood" = true ]; then
+                msg+="в AUR помечен устаревшим; "
+            fi
+            if [ "$maint" = - ]; then
+                msg+="в AUR без мейнтейнера; "
+            fi
+        fi
+        if [ -z "$msg" ] && [ $VERBOSE -eq 1 ]; then
+            msg="ok; "
+        fi
+        if [ -n "$msg" ]; then
+            printf '%s\t%s\t%s\t%s\n' "$name" "$lver" "$src" "${msg%; }"
+        fi
+    done < "$TMP/aur-cmp" > "$TMP/aur-report"
+
+    echo "проверено пакетов: $(wc -l < "$TMP/aur-cmp")"
+    if [ -s "$TMP/aur-report" ]; then
+        { printf 'ПАКЕТ\tВЕРСИЯ\tИСТОЧНИК\tПРОБЛЕМА\n'; sort "$TMP/aur-report"; } | column -t -s $'\t'
+    else
+        echo "проблем нет"
+    fi
+    echo
+    echo "ВЕРСИЯ: для пакетов вне репозиториев — установленная (обновить: yay -Sua),"
+    echo "для ${AUR_REPOS// /, } — версия в репозитории (отстаёт — пересобрать в репозитории)"
+}
+
+section_orphans() {
+    if [ $QUIET -eq 1 ]; then
+        cat "$TMP/orphans"
+        return
+    fi
+    header "Сироты: $(wc -l < "$TMP/orphans")"
+    if [ ! -s "$TMP/orphans" ]; then
+        echo "нет"
+        return
+    fi
+    awk -F'\t' -v OFS='\t' '
+        FILENAME == ARGV[1] { orphan[$1] = 1; next }
+        FILENAME == ARGV[2] { foreign[$1] = 1; next }
+        $1 in orphan {
+            note = ($1 in foreign) ? "вне репозиториев" : ""
+            users = ""
+            n = split($5, o, ",")
+            for (i = 1; i <= n; i++) if (!(o[i] in orphan)) users = users (users ? "," : "") o[i]
+            if (users) note = note (note ? "; " : "") "необязательна для: " users
+            print $1, $2, $6, note
+        }
+    ' "$TMP/orphans" "$TMP/foreign" "$TMP/pkgs" | sort > "$TMP/orphans.tsv"
+    {
+        printf 'ПАКЕТ\tВЕРСИЯ\tРАЗМЕР\tЗАМЕТКИ\n'
+        numfmt -d $'\t' --field=3 --to=iec < "$TMP/orphans.tsv"
+    } | column -t -s $'\t'
+    echo
+    echo "всего: $(numfmt --to=iec "$(awk -F'\t' '{ s += $3 } END { print s + 0 }' "$TMP/orphans.tsv")")"
+    if [ $STRICT -eq 1 ]; then
+        echo "режим -t: «необязательна для» — пакет нужен как необязательная зависимость, вслепую не удалять"
+    else
+        # Без -s: список уже замкнут, а -s снёс бы и необязательные
+        # зависимости нужных пакетов.
+        echo "удалить все:          sudo pacman -Rn \$($(basename "$0") -q orphans)"
+    fi
+    echo "оставить программу:   sudo pacman -D --asexplicit <пакет>"
+    echo "pacman не видит программ вне себя (/opt, Steam, Wine) — проверьте lib32-* и то, что запускаете вручную"
+}
+
+section_broken() {
+    if command -v checkrebuild >/dev/null; then
+        header "Пакеты, требующие пересборки (checkrebuild)"
+        checkrebuild || true
+        return
+    fi
+    need file ldd
+    header "Ссылки на отсутствующие .so у пакетов вне репозиториев"
+    if [ ! -s "$TMP/foreign" ]; then
+        echo "нет пакетов вне репозиториев"
+        return
+    fi
+    # Только стандартные каталоги: в /opt и /usr/share IDE и electron-приложения
+    # таскают библиотеки под чужие платформы, это шум.
+    # shellcheck disable=SC2046
+    LC_ALL=C pacman -Ql $(cat "$TMP/foreign") |
+        awk '{ p = $1; sub(/^[^ ]+ /, "") } /^\/usr\/(bin|lib|lib32)\// && !/\/$/ { print p "\t" $0 }' > "$TMP/files"
+    cut -f2 "$TMP/files" | file -N -F $'\t' -f - 2>/dev/null |
+        awk -F'\t' '/ELF/ && /dynamically linked/ { print $1 }' > "$TMP/elf"
+    local f
+    while IFS= read -r f; do
+        { ldd "$f" 2>/dev/null || true; } | awk -v f="$f" '/=> not found/ { print f "\t" $1 }'
+    done < "$TMP/elf" > "$TMP/missing"
+    awk -F'\t' '
+        FILENAME == ARGV[1] { owner[$2] = $1; next }
+        { p = owner[$1]; if (!((p, $2) in seen)) { seen[p, $2] = 1; libs[p] = libs[p] " " $2 } }
+        END { for (p in libs) print p ":" libs[p] }
+    ' "$TMP/files" "$TMP/missing" | sort > "$TMP/broken"
+    echo "проверено ELF-файлов: $(wc -l < "$TMP/elf")"
+    if [ -s "$TMP/broken" ]; then
+        cat "$TMP/broken"
+    else
+        echo "битых ссылок нет"
+    fi
+    echo "все пакеты системы проверяет checkrebuild из extra/rebuild-detector"
+}
+
+for s in "${SECTIONS[@]}"; do
+    "section_$s"
+done
