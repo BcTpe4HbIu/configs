@@ -1,5 +1,6 @@
 ---
 name: plan-file-workflow
+disable-model-invocation: true
 description: >
   Use when work should be governed by a persisted markdown plan file with explicit lifecycle
   states. Enforces draft -> in progress -> done transitions, yaml front matter validation,
