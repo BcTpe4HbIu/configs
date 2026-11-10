@@ -49,8 +49,8 @@ ln -sf "$(pwd)/fonts.conf" ~/.config/fontconfig/fonts.conf
 
 mkdir -p ~/.config/opencode
 
-link_or_warn_dir "$(pwd)/ai/agents" ~/.config/opencode/agents
-link_or_warn_dir "$(pwd)/ai/skills" ~/.agents/skills
+link_or_warn_dir "$(pwd)/ai/opencode/agents" ~/.config/opencode/agents
+link_or_warn_dir "$(pwd)/ai/agents" ~/.agents
 
 [ -L ~/.config/opencode/skills ] && unlink ~/.config/opencode/skills
 
