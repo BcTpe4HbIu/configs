@@ -17,7 +17,8 @@
       "skillPath": "skills/deepwiki/SKILL.md",
       "skillFolderHash": "b32a330b3f7a51cc128ec89a2af00a23fafd512a",
       "installedAt": "2026-08-27T11:08:56.055Z",
-      "updatedAt": "2026-08-27T11:08:56.055Z"
+      "updatedAt": "2026-11-25T09:49:27.198Z",
+      "commit": "3ba91173780c14cd2079938475a13ccc8f5d05f6"
     },
     "ask-matt": {
       "source": "mattpocock/skills",
